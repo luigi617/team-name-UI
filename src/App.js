@@ -7,6 +7,9 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Room from './pages/Room';
 import Recording from './pages/Recording';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import SignUp from './pages/SignUp';
 
 const router = createBrowserRouter([
   {
@@ -14,11 +17,19 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
+    path: "/sign-up",
+    element: <SignUp />,
+  },
+  {
     path: "/",
+    element: <Login />,
+  },
+  {
+    path: "/home",
     element: <Home />,
   },
   {
-    path: "/room/:id",
+    path: "/room/:streamPath",
     element: <Room />,
   },
   {
@@ -31,6 +42,7 @@ function App() {
   return (
     <div className="App">
       <RouterProvider router={router} />
+      <ToastContainer />
     </div>
   );
 }

@@ -1,10 +1,22 @@
 import { Box } from '@mui/material';
 import UserHeader from '../components/UserHeader';
 import RoomCard from '../components/RoomCard';
-
-const cards = new Array(20).fill(0)
+import { useEffect, useState } from 'react';
 
 function Home() {
+  const [streams, setStreams] = useState([])
+
+  useEffect(() => {
+    // Fetch the list of available streams
+    fetch(`${process.env.REACT_APP_STREAMING_SERVICE}/streams`)
+      .then(response => response.json())
+      .then(data => {
+        setStreams(data.streams)
+      }).catch(err => {
+        console.log(err)
+    })
+  }, [])
+
   return (
     <Box sx={{
       display: 'flex',
@@ -26,7 +38,7 @@ function Home() {
         </Box>
         <Box flex={1} padding={2} display="flex" flexWrap="wrap" gap={3}>
           {
-            cards.map((item, index) => <RoomCard key={index} />)
+            streams.map((item, index) => <RoomCard key={index} stream={item} />)
           }
         </Box>
       </Box>

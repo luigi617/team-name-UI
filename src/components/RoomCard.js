@@ -10,12 +10,12 @@ import { red } from '@mui/material/colors';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useNavigate } from 'react-router-dom';
 
-export default function RoomCard() {
+export default function RoomCard({stream}) {
 
   const navigate = useNavigate();
 
   return (
-    <Card sx={{ maxWidth: 300 }} onClick={() => navigate('/room/1')}>
+    <Card sx={{ maxWidth: 300 }} onClick={() => navigate(`/room/${stream.user_id}/${stream.stream_id}`)}>
       <CardHeader
         avatar={
           <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
@@ -27,7 +27,7 @@ export default function RoomCard() {
             <MoreVertIcon />
           </IconButton>
         }
-        title="Shrimp and Chorizo Paella"
+        title={`Stream ID: ${stream.stream_id}`}
       />
       <CardMedia
         component="img"

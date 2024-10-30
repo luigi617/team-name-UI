@@ -12,13 +12,16 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Logo from '../assets/images/Live.svg';
+import { useNavigate } from 'react-router-dom';
 
 const pages = ['Products', 'Pricing', 'Blog'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['Profile', 'Start Streaming', 'Logout'];
 
 function UserHeader() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+
+  const navigate = useNavigate();
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -36,6 +39,13 @@ function UserHeader() {
     setAnchorElUser(null);
   };
 
+  const handleSettingClick = (setting) => {
+    handleCloseNavMenu();
+    if (setting === 'Start Streaming') {
+      navigate('/recording')
+    }
+  }
+
   return (
     <AppBar position="fixed" sx={{zIndex: 999, bgcolor: '#fff', padding: "0 20px"}}>
       <Toolbar disableGutters>
@@ -50,9 +60,7 @@ function UserHeader() {
           sx={{
             mr: 2,
             display: { xs: 'none', md: 'flex' },
-            fontFamily: 'monospace',
             fontWeight: 700,
-            letterSpacing: '.3rem',
             color: '#333',
             textDecoration: 'none',
           }}
@@ -118,7 +126,7 @@ function UserHeader() {
             onClose={handleCloseUserMenu}
           >
             {settings.map((setting) => (
-              <MenuItem key={setting} onClick={handleCloseUserMenu}>
+              <MenuItem key={setting} onClick={() => handleSettingClick(setting)}>
                 <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
               </MenuItem>
             ))}

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-function Login() {
+function SignUp() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
@@ -12,13 +12,13 @@ function Login() {
 
   const login = () => {
     navigate('/')
-    fetch(`${process.env.REACT_APP_AUTHENTICATION_SERVICE}/login`, {
+    fetch(`${process.env.REACT_APP_AUTHENTICATION_SERVICE}/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        identifier: email,
+        email,
         password
       })
     }).then(res => res.json())
@@ -26,9 +26,8 @@ function Login() {
         if (res.status === 'error') {
           toast.error(res.message)
         } else {
-          toast.success("Login successful!");
-          localStorage.setItem("token", res.token)
-          navigate('/home')
+          toast.success(res.message)
+          navigate('/login')
         }
       })
   }
@@ -48,7 +47,7 @@ function Login() {
       }}
     >
       <Card sx={{ width: 350, display: 'flex', flexDirection: 'column', padding: 2, gap: 2 }}>
-        <h1>Login</h1>
+        <h1>Sign Up</h1>
         <TextField
           id="email"
           label="Email"
@@ -65,12 +64,12 @@ function Login() {
           onChange={e => setPassword(e.target.value)}
         />
         <Button variant="contained" disableElevation onClick={login}>
-          Login
+          Sign Up
         </Button>
-        <Box textAlign="left" sx={{mb: 1}}>Don't have an account?<Link to='/sign-up'>Sign up</Link></Box>
+        <Box textAlign="left" sx={{mb: 1}}>Already have an account?<Link to='/login'>Login</Link></Box>
       </Card>
     </Box>
   )
 }
 
-export default Login
+export default SignUp
