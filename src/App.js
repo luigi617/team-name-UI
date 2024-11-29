@@ -29,7 +29,7 @@ const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: "/room/:streamPath",
+    path: "/room",
     element: <Room />,
   },
   {
