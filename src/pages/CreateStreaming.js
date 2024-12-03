@@ -1,6 +1,5 @@
 // FILE: src/pages/CreateStreaming.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 
 const CreateStreaming = () => {
   const [title, setTitle] = useState('');
@@ -11,18 +10,20 @@ const CreateStreaming = () => {
 
   useEffect(() => {
     // Fetch games from the API
-    axios.get('http://3.129.90.190:5000/steam_api/game_name_list')
-      .then(response => {
-        setGames(response.data);
+    fetch(`${process.env.REACT_APP_STEAM_API_MANAGEMENT_SERVICE}/steam_api/game_name_list`)
+      .then(response => response.json())
+      .then(data => {
+        setGames(data);
       })
       .catch(error => {
         console.error('Error fetching games:', error);
       });
 
     // Fetch tags from the API
-    axios.get('http://3.129.90.190:5000/steam_api/game_tag_list')
-      .then(response => {
-        setTags(response.data);
+    fetch(`${process.env.REACT_APP_STEAM_API_MANAGEMENT_SERVICE}/steam_api/game_tag_list`)
+      .then(response => response.json())
+      .then(data => {
+        setTags(data);
       })
       .catch(error => {
         console.error('Error fetching tags:', error);
@@ -38,9 +39,16 @@ const CreateStreaming = () => {
       streamer_id: 1,  // Hardcoded streamer ID for now
     };
 
-    axios.post('http://18.118.170.174/create_stream', data)
-      .then(response => {
-        console.log('Stream created successfully:', response.data);
+    fetch(`${process.env.REACT_APP_RECOMMENDATION_SERVICE}/create_stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Stream created successfully:', data);
       })
       .catch(error => {
         console.error('Error creating stream:', error);
