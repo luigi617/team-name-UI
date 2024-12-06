@@ -4,6 +4,7 @@ import CommentCard from '../components/CommentCard';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import invalidVideo from '../assets/videos/test.mp4'
+import Hls from 'hls.js';
 
 
 function Room() {
@@ -24,12 +25,47 @@ function Room() {
   }, [])
 
   useEffect(() => {
-    if (streamer_id && session_id && videoRef.current) {
-      videoRef.current.src = invalidVideo;
-      // videoRef.current.src = `${process.env.REACT_APP_STREAMING_SERVICE}/watch/${streamer_id}/${session_id}/stream.m3u8`;
-      // videoRef.current.type = 'application/x-mpegURL';
+    videoRef.current.type = 'application/x-mpegURL';
+    const video = videoRef.current;
+    if (streamer_id && session_id && video) {
+      const hls = new Hls();
+
+      const streamUrl = `${process.env.REACT_APP_STREAMING_SERVICE}/watch/${streamer_id}/${session_id}/stream.m3u8`;
+
+      if (Hls.isSupported()) {
+        hls.loadSource(streamUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play().catch((err) => {
+            console.error('Error attempting to play:', err);
+          });
+        });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          console.error('HLS.js error:', data);
+          setVideoError(true);
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // For Safari and other native HLS support
+        video.src = streamUrl;
+        video.addEventListener('loadedmetadata', () => {
+          video.play().catch((err) => {
+            console.error('Error attempting to play:', err);
+          });
+        });
+      } else {
+        // Fallback to a non-HLS player or display an error
+        console.error('This browser does not support HLS.');
+        setVideoError(true);
+      }
+
+      // Cleanup on unmount
+      return () => {
+        if (hls) {
+          hls.destroy();
+        }
+      };
     }
-  }, [streamer_id, session_id, videoRef])
+  }, [streamer_id, session_id]);
 
   const getMessage = () => {
     fetch(commentUrl)
