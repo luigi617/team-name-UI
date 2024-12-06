@@ -57,6 +57,7 @@ function Room() {
         console.error('This browser does not support HLS.');
         setVideoError(true);
       }
+      
 
       // Cleanup on unmount
       return () => {
