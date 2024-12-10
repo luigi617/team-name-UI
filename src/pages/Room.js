@@ -3,7 +3,6 @@ import UserHeader from '../components/UserHeader';
 import CommentCard from '../components/CommentCard';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import invalidVideo from '../assets/videos/test.mp4'
 import Hls from 'hls.js';
 
 
@@ -120,7 +119,7 @@ function Room() {
             muted
             playsInline
             preload="auto"
-            style={{width: '100%'}}
+            style={{height: '100%'}}
             onError={handleVideoError}
             >
             </video>
