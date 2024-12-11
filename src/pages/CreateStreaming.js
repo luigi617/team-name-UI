@@ -10,25 +10,35 @@ const CreateStreaming = () => {
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
 
+  const get_game_name_list = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_COMPOSITION_API}/get_game_name_list`)
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch game name list');
+      }
+      const data = response.data;
+      
+      setGames(data);
+    } catch (err) {
+      console.error('Error fetching games:', err);
+    }
+  }
+  const get_game_tag_list = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_COMPOSITION_API}/get_game_tag_list`)
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch game tag list');
+      }
+      const data = response.data;
+      
+      setTags(data);
+    } catch (err) {
+      console.error('Error fetching tags:', err);
+    }
+  }
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_COMPOSITION_API}/get_game_name_list`)
-      .then(response => response.json())
-      .then(data => {
-        setGames(data);
-      })
-      .catch(error => {
-        console.error('Error fetching games:', error);
-      });
-
-    // Fetch tags from the API
-    axios.get(`${process.env.REACT_APP_COMPOSITION_API}/get_game_tag_list`)
-      .then(response => response.json())
-      .then(data => {
-        setTags(data);
-      })
-      .catch(error => {
-        console.error('Error fetching tags:', error);
-      });
+    get_game_name_list()
+    get_game_tag_list()
   }, []);
 
   const handleSubmit = (event) => {
