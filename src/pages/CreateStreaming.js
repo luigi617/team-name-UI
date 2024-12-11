@@ -10,7 +10,7 @@ const CreateStreaming = () => {
 
   useEffect(() => {
     // Fetch games from the API
-    fetch(`${process.env.REACT_APP_STEAM_API_MANAGEMENT_SERVICE}/steam_api/game_name_list`)
+    fetch(`${process.env.REACT_APP_API_GATEWAY}/game_name_list`)
       .then(response => response.json())
       .then(data => {
         setGames(data);
@@ -20,7 +20,7 @@ const CreateStreaming = () => {
       });
 
     // Fetch tags from the API
-    fetch(`${process.env.REACT_APP_STEAM_API_MANAGEMENT_SERVICE}/steam_api/game_tag_list`)
+    fetch(`${process.env.REACT_APP_API_GATEWAY}/game_tag_list`)
       .then(response => response.json())
       .then(data => {
         setTags(data);
@@ -36,10 +36,9 @@ const CreateStreaming = () => {
       title,
       game: selectedGame,
       tags: selectedTags,
-      streamer_id: 1,  // Hardcoded streamer ID for now
     };
 
-    fetch(`${process.env.REACT_APP_RECOMMENDATION_SERVICE}/create_stream`, {
+    fetch(`${process.env.REACT_APP_API_GATEWAY}/start_stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,6 +48,12 @@ const CreateStreaming = () => {
       .then(response => response.json())
       .then(data => {
         console.log('Stream created successfully:', data);
+        const token = data.token;
+        if (token) {
+          window.location.href = `/streaming?token=${token}`;
+        } else {
+          console.error('Token not found in response');
+        }
       })
       .catch(error => {
         console.error('Error creating stream:', error);
