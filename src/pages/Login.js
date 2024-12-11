@@ -26,19 +26,29 @@ const LoginPage = () => {
         />
         <button onClick={() => {
           console.log(Cookies.get("user_info"))
-          fetch("https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/dev/get_live_streams",
-            {
-              credentials: 'include'
-            }
-          ).then((data) => {console.log(123)})
+          axios.get("https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/dev/get_live_streams", {
+            withCredentials: true  // Correct option to send credentials with the request
+          })
+            .then((response) => {
+              console.log("Data fetched successfully:", response.data);  // Log the actual data from the response
+            })
+            .catch((error) => {
+              console.error("Error fetching live streams:", error);  // Handle any errors
+            });
         }}>nihao2</button>
         <button onClick={() => {
           console.log(Cookies.get("user_info"))
-          axios.get("https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/dev/get_available_games",
-            {
-              withCredentials: true
-            }
-          ).then((data) => {console.log(data.data)})
+          axios.get("https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/dev/get_available_games", {
+            withCredentials: true
+          })
+            .then((response) => {
+              // Log the actual data from the response object
+              console.log(response.data);
+            })
+            .catch((error) => {
+              // Handle errors (network issues, server errors, etc.)
+              console.error("Error fetching available games:", error);
+            });
         }}>nihao1</button>
       </div>
     </div>
