@@ -118,8 +118,18 @@ function Home() {
           bgcolor="#fafafa"
           p={2}
         >
-          {games.length > 0 ? (
-            games.map((game, index) => (
+          <Box
+            key={-1}
+            sx={{
+              bgcolor: '#cccccc', 
+              padding: 1,
+              cursor: 'pointer',
+            }}
+            onClick={() => changeSelectedGame(null)} 
+          >
+            All Videos
+          </Box>
+          {games.map((game, index) => (
               <Box
                 key={index}
                 sx={{
@@ -135,11 +145,7 @@ function Home() {
                 {game}
               </Box>
             ))
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              No available games
-            </Typography>
-          )}
+          }
         </Box>
 
         <Box flex={1} padding={2} display="flex" flexDirection="column">
@@ -154,13 +160,14 @@ function Home() {
                   <Box
                     key={`live-video-${index}`}
                     sx={{
-                      padding: 2,
+                      padding: 3,
                       border: '1px solid #ccc',
                       borderRadius: '8px',
                       cursor: 'pointer',
                       '&:hover': {
                         backgroundColor: '#f0f0f0',
                       },
+                      minWidth: "200px"
                     }}
                   >
                     <Link
@@ -170,8 +177,6 @@ function Home() {
                       <Typography variant="h6">{item.title}</Typography>
                       <Typography variant="body1">Game: {item.game}</Typography>
                       <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
-                      <Typography variant="body2">Start Time: {new Date(item.start_time).toLocaleString()}</Typography>
-                      <Typography variant="body2">End Time: {new Date(item.end_time).toLocaleString()}</Typography>
                     </Link>
                   </Box>
                 ))
@@ -193,24 +198,23 @@ function Home() {
                   <Box
                     key={`past-video-${index}`}
                     sx={{
-                      padding: 2,
+                      padding: 3,
                       border: '1px solid #ccc',
                       borderRadius: '8px',
                       cursor: 'pointer',
                       '&:hover': {
                         backgroundColor: '#f0f0f0',
                       },
+                      minWidth: "200px"
                     }}
                   >
                     <Link
                       to={`/room?s=${item.streamer_id}&v=${item.session_id}`}
-                      style={{ textDecoration: 'none', color: 'inherit' }}
+                      style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}
                     >
                       <Typography variant="h6">{item.title}</Typography>
                       <Typography variant="body1">Game: {item.game}</Typography>
                       <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
-                      <Typography variant="body2">Start Time: {new Date(item.start_time).toLocaleString()}</Typography>
-                      <Typography variant="body2">End Time: {new Date(item.end_time).toLocaleString()}</Typography>
                     </Link>
                   </Box>
                 ))
