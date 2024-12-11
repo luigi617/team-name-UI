@@ -38,9 +38,7 @@ const LoginPage = () => {
         }}>nihao2</button>
         <button onClick={() => {
           console.log(Cookies.get("user_info"))
-          axios.get("https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/dev/get_available_games", {
-            withCredentials: true
-          })
+          axios.get("https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/dev/get_available_games")
             .then((response) => {
               // Log the actual data from the response object
               console.log(response.data);
