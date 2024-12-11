@@ -33,11 +33,11 @@ function Room() {
     if (isPastVideo == 1){
       try {
         const response = await axios.get(`${process.env.REACT_APP_COMPOSITION_API}/get_user_video_recommendations?user=${'luigi'}`);
-        if (!response.ok) {
+        if (response.status != 200) {
           throw new Error('Failed to fetch recommendations');
         }
-        const data = await response.json();
-        setRecommendationVideo(data.data)
+        const data = await response.data;
+        setRecommendationVideo(data["data"])
       } catch (err) {
         console.error('Error fetching recommendations:', err);
       }
