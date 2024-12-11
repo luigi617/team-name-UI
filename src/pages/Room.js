@@ -1,45 +1,142 @@
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import UserHeader from '../components/UserHeader';
 import CommentCard from '../components/CommentCard';
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import Hls from 'hls.js';
+import { Link } from 'react-router-dom';
 
 
 function Room() {
   const videoRef = useRef();
   const [comments, setComments] = useState([])
+  const [videoError, setVideoError] = useState(false);
+  
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  
+  const streamer_id = queryParams.get('s');
+  const session_id = queryParams.get('v');
 
-  const { streamPath } = useParams();
+  const isPastVideo = queryParams.get('x');
+  const [recommendationVideo, setRecommendationVideo] = useState([])
+  
+  let commentUrl = `${process.env.REACT_APP_COMMENT_SERVICE}/get_comments?streamerId=${streamer_id}&index=-1`;
 
   useEffect(() => {
     getMessage()
+    getRecommendation()
   }, [])
 
-  useEffect(() => {
-    if (streamPath && videoRef.current) {
-      videoRef.current.src = `${process.env.REACT_APP_STREAMING_SERVICE}/watch/${streamPath.split("/")[0]}/${streamPath.split("/")[1]}/stream.m3u8`;
-      videoRef.current.type = 'application/x-mpegURL';
+  const getRecommendation = async () => {
+    
+    if (isPastVideo == 1){
+      try {
+        const response = await fetch(`${process.env.REACT_APP_COMPOSITION_API}/get_user_video_recommendations?user=${'luigi'}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch recommendations');
+        }
+        const data = await response.json();
+        setRecommendationVideo(data.data)
+      } catch (err) {
+        console.error('Error fetching recommendations:', err);
+      }
     }
-  }, [streamPath, videoRef])
+  }
+
+
+  useEffect(() => {
+    videoRef.current.type = 'application/x-mpegURL';
+    const video = videoRef.current;
+    if (streamer_id && session_id && video) {
+      var hls;
+      
+      if (isPastVideo === 1) {
+        hls = new Hls();
+      } else {
+        hls = new Hls({
+          liveSyncDuration: 3, // Aim to be within 3 seconds of the live edge
+          liveMaxLatencyDuration: 6, // Maximum latency of 6 seconds
+          maxBufferLength: 6, // Buffer up to 6 seconds
+          maxMaxBufferLength: 12, // Absolute max buffer length
+        });
+      }
+
+      const streamUrl = `${process.env.REACT_APP_STREAMING_SERVICE}/watch/${streamer_id}/${session_id}/stream.m3u8`;
+      
+      if (Hls.isSupported()) {
+        hls.loadSource(streamUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play().catch((err) => {
+            console.error('Error attempting to play:', err);
+          });
+        });
+        hls.on(Hls.Events.FRAG_LOADED, () => {
+          // Seek to live edge when a new fragment is loaded
+          const liveSyncPosition = hls.liveSyncPosition;
+          
+          if (isPastVideo == 0 && liveSyncPosition && Math.abs(video.currentTime - liveSyncPosition) > 1) {
+            video.currentTime = liveSyncPosition;
+            console.log(`Seeking to live edge at ${liveSyncPosition} seconds`);
+          }
+        });
+        hls.on(Hls.Events.ERROR, function (event, data) {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.error('Network error encountered, trying to recover...');
+                hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.error('Media error encountered, trying to recover...');
+                hls.recoverMediaError();
+                break;
+              default:
+                setVideoError(true);
+                hls.destroy();
+                break;
+            }
+          }
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = streamUrl;
+        video.addEventListener('loadedmetadata', () => {
+          video.play().catch((err) => {
+            console.error('Error attempting to play:', err);
+          });
+        });
+      } else {
+        console.error('This browser does not support HLS.');
+        setVideoError(true);
+      }
+      
+      return () => {
+        if (hls) {
+          hls.destroy();
+        }
+      };
+    }
+  }, [streamer_id, session_id]);
 
   const getMessage = () => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/request/1`)
+    fetch(commentUrl)
       .then(res => res.json())
       .then(res => {
         setComments(res)
+        commentUrl = res["links"]["next"]
       }).catch((err) => {
       console.log(err)
     })
   }
 
   const sendMessage = (message) => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/upload`, {
+    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/post_comment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         comment: message,
-        userId: 1,
-        targetId: 2,
+        streamerId: streamer_id,
       },
       body: JSON.stringify({})
     })
@@ -51,6 +148,9 @@ function Room() {
     })
   }
 
+  const handleVideoError = () => {
+    setVideoError(true);
+  };
 
   return (
     <Box sx={{
@@ -62,21 +162,59 @@ function Room() {
     >
       <UserHeader />
       <Box flex={1} display="flex" mt={8}>
-        <Box display="flex" flexDirection="column" gap={2} width={250} borderRight="1px solid #e1e1e1" bgcolor="#fafafa" p={2}>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>League of Legends</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Just Chatting</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>VALORANT</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Silent Hill 2</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Diablo IV</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Genshin Impact</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Apex Legends</Box>
-        </Box>
         <Box flex={1} padding={2} display="flex" flexWrap="wrap">
           <Box flex={1}>
-            <video ref={videoRef} autoPlay playsInline style={{width: '100%'}} />
+            <video
+            ref={videoRef}
+            controls
+            autoPlay={true}
+            muted
+            playsInline
+            preload="auto"
+            style={{
+              height: '100%',
+              width: '100%',
+              maxHeight: "calc(100vh - 100px)"
+            }}
+            onError={handleVideoError}
+            >
+            </video>
+            {videoError && (
+              <Typography color="error" variant="h6" sx={{ marginTop: 2 }}>
+                Video failed to load. Please check the URL or try again later.
+              </Typography>
+            )}
           </Box>
           <Box sx={{width: 250}} borderLeft="1px solid #e1e1e1">
+            {isPastVideo == 0 ?
             <CommentCard comments={comments} sendMessage={sendMessage} />
+            :
+              recommendationVideo.map((item, index) => (
+                  <Box
+                    key={`past-video-${index}`}
+                    m={2}
+                    sx={{
+                      padding: 3,
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: '#f0f0f0',
+                      },
+                      minWidth: "200px"
+                    }}
+                  >
+                    <Link
+                      to={`/room?s=${item.streamer_id}&v=${item.session_id}&x=1`}
+                      style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}
+                    >
+                      <Typography variant="h6">{item.title}</Typography>
+                      <Typography variant="body1">Game: {item.game}</Typography>
+                      <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
+                    </Link>
+                  </Box>
+                ))
+          }
           </Box>
         </Box>
       </Box>

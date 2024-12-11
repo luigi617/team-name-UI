@@ -23,14 +23,10 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <Login />,
-  },
-  {
-    path: "/home",
     element: <Home />,
   },
   {
-    path: "/room/:streamPath",
+    path: "/room",
     element: <Room />,
   },
   {
@@ -47,7 +43,7 @@ function App() {
   return (
     <div className="App">
       <RouterProvider router={router} />
-      <ToastContainer />
+      {/* <ToastContainer /> */}
     </div>
   );
 }
