@@ -14,7 +14,6 @@ function Recording() {
   const socket = io(`${process.env.REACT_APP_STREAMING_SERVICE}/stream`);
   let mediaRecorder;
   const videoRef = useRef();
-  const [isStreaming, setIsStreaming] = useState(false);
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -26,6 +25,7 @@ function Recording() {
 
   useEffect(() => {
     getMessage()
+    startStream()
   }, [])
 
   const startStream = () => {
@@ -34,7 +34,6 @@ function Recording() {
       stream_id: streamId
     });
     Stream()
-    setIsStreaming(true);
   }
 
   const stopStreaming = () => {
@@ -50,7 +49,6 @@ function Recording() {
         tracks.forEach(track => track.stop());  // Stop all tracks
         videoRef.current.srcObject = null;  // Clear the video source
       }
-      setIsStreaming(false);
     } catch (error) {
       console.error("Error stopping the stream: ", error);
     }
@@ -131,11 +129,7 @@ function Recording() {
           </Box>
           <Box sx={{width: 250}} borderLeft="1px solid #e1e1e1">
             <Box display="flex" justifyContent="center" mt={2}>
-              {isStreaming ? 
               <Button variant="contained" onClick={stopStreaming}>Stop Stream</Button>
-              :
-              <Button variant="contained" onClick={startStream}>Start Stream</Button>
-              }
             </Box>
             <CommentCard comments={comments} sendMessage={sendMessage} canSendMessage={false}/>
           </Box>
