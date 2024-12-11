@@ -10,6 +10,7 @@ import Recording from './pages/Recording';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SignUp from './pages/SignUp';
+import CreateStreaming from "./pages/CreateStreaming";
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
     path: "/recording",
     element: <Recording />,
   },
+  {
+    path: "/create-streaming",
+    element: <CreateStreaming />,
+  }
 ]);
 
 function App() {
