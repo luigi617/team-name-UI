@@ -4,7 +4,7 @@ import CommentCard from '../components/CommentCard';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
-
+import axios from 'axios';
 
 function getAccessToken() {
   return localStorage.getItem('access_token');
@@ -97,33 +97,38 @@ function Recording() {
       });
   }
 
-  const getMessage = () => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/request/1`)
-      .then(res => res.json())
-      .then(res => {
-        setComments(res)
-      }).catch((err) => {
-        console.log(err)
-    })
+  const getMessage = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/request/1`);
+      
+      // Check for a successful response
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch videos');
+      }
+      
+      const data = response.data;  // Axios already parses the response to JSON
+      
+      setComments(data)
+    } catch (err) {
+      console.log(err)
+    }
   }
 
-  const sendMessage = (message) => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/upload`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        comment: message,
-        userId: 1,
-        targetId: 2,
-      },
-      body: JSON.stringify({})
-    })
-      .then(res => res.json())
-      .then(res => {
-        getMessage()
-      }).catch((err) => {
+  const sendMessage = async (message) => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/upload`);
+      
+      // Check for a successful response
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch videos');
+      }
+      
+      const data = response.data;  // Axios already parses the response to JSON
+      
+      getMessage()
+    } catch (err) {
       console.log(err)
-    })
+    }
   }
 
   return (

@@ -3,6 +3,7 @@ import UserHeader from '../components/UserHeader';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import VideoCard from '../components/VideoCard'
+import axios from 'axios';
 function Home() {
   
   const [games, setGames] = useState([]); 
@@ -23,11 +24,12 @@ function Home() {
     }
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
+      const response = await axios.get(url);
+      if (response.status !== 200) {
         throw new Error('Failed to fetch videos');
       }
-      const data = await response.json();
+      const data = response.data;
+      
       if (type === 'past') {
         setPastStreamVideos(data || []);
       } else {
@@ -40,12 +42,13 @@ function Home() {
 
   const fetchAvailableGames = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_COMPOSITION_API}/get_available_games`);
-      if (!response.ok) {
+      const response = await axios.get(`${process.env.REACT_APP_COMPOSITION_API}/get_available_games`);
+      if (response.status !== 200) {
         throw new Error('Failed to fetch games');
       }
-      const data = await response.json();
+      const data = response.data;
       setGames(data["games"] || []);
+      
     } catch (err) {
       console.error('Error fetching games:', err);
     }

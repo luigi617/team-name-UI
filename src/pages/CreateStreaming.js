@@ -1,6 +1,7 @@
 // FILE: src/pages/CreateStreaming.js
 import React, { useState, useEffect } from 'react';
 import '../css/CreateStreamingForm.css';
+import axios from 'axios';
 
 const CreateStreaming = () => {
   const [title, setTitle] = useState('');
@@ -10,7 +11,7 @@ const CreateStreaming = () => {
   const [selectedTags, setSelectedTags] = useState([]);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_COMPOSITION_API}/get_game_name_list`)
+    axios.get(`${process.env.REACT_APP_COMPOSITION_API}/get_game_name_list`)
       .then(response => response.json())
       .then(data => {
         setGames(data);
@@ -20,7 +21,7 @@ const CreateStreaming = () => {
       });
 
     // Fetch tags from the API
-    fetch(`${process.env.REACT_APP_COMPOSITION_API}/get_game_tag_list`)
+    axios.get(`${process.env.REACT_APP_COMPOSITION_API}/get_game_tag_list`)
       .then(response => response.json())
       .then(data => {
         setTags(data);
@@ -38,8 +39,7 @@ const CreateStreaming = () => {
       tags: selectedTags,
     };
 
-    fetch(`${process.env.REACT_APP_COMPOSITION_API}/start_stream`, {
-      method: 'POST',
+    axios.post(`${process.env.REACT_APP_COMPOSITION_API}/start_stream`, {
       headers: {
         'Content-Type': 'application/json',
       },

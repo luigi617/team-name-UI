@@ -3,6 +3,7 @@ import bgImage from '../assets/images/bg.jpg';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 function SignUp() {
   const [email, setEmail] = useState("")
@@ -12,8 +13,7 @@ function SignUp() {
 
   const login = () => {
     navigate('/')
-    fetch(`${process.env.REACT_APP_AUTHENTICATION_SERVICE}/register`, {
-      method: 'POST',
+    axios.post(`${process.env.REACT_APP_AUTHENTICATION_SERVICE}/register`, {
       headers: {
         'Content-Type': 'application/json'
       },

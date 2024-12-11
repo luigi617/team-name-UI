@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Hls from 'hls.js';
 import VideoCard from '../components/VideoCard';
-
+import axios from 'axios';
 
 function Room() {
   const videoRef = useRef();
@@ -32,7 +32,7 @@ function Room() {
     
     if (isPastVideo == 1){
       try {
-        const response = await fetch(`${process.env.REACT_APP_COMPOSITION_API}/get_user_video_recommendations?user=${'luigi'}`);
+        const response = await axios.get(`${process.env.REACT_APP_COMPOSITION_API}/get_user_video_recommendations?user=${'luigi'}`);
         if (!response.ok) {
           throw new Error('Failed to fetch recommendations');
         }
@@ -120,7 +120,7 @@ function Room() {
   }, [streamer_id, session_id]);
 
   const getMessage = () => {
-    fetch(commentUrl)
+    axios.get(commentUrl)
       .then(res => res.json())
       .then(res => {
         setComments(res)
@@ -131,8 +131,7 @@ function Room() {
   }
 
   const sendMessage = (message) => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/post_comment`, {
-      method: 'POST',
+    axios.post(`${process.env.REACT_APP_COMMENT_SERVICE}/post_comment`, {
       headers: {
         'Content-Type': 'application/json',
         comment: message,
