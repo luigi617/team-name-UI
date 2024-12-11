@@ -34,7 +34,7 @@ const LoginPage = () => {
         }}>nihao2</button>
         <button onClick={() => {
           console.log(Cookies.get("user_info"))
-          axios.get("http://18.118.170.174:5001/test",
+          axios.get("https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/dev/get_available_games",
             {
               withCredentials: true
             }
