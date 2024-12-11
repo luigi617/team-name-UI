@@ -6,16 +6,14 @@ import { io } from 'socket.io-client';
 
 
 const socket = io(`${process.env.REACT_APP_STREAMING_SERVICE}/stream`);
-// Define the user ID (you can retrieve this from a login system)
-const userId = 1;  // Replace with dynamic user ID
-
-// Generate a unique stream ID
-const streamId = parseInt(Date.now());
+const userId = 1;
+const streamId = 3;
 
 let mediaRecorder;
 
 function Recording() {
   const videoRef = useRef();
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const [comments, setComments] = useState([])
 
@@ -29,15 +27,25 @@ function Recording() {
       stream_id: streamId
     });
     Stream()
+    setIsStreaming(true);
   }
 
   const stopStreaming = () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
-      socket.emit('stop_stream', {
-        user_id: userId,
-        stream_id: streamId
-      });
+    try {
+
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        socket.emit('stop_stream');
+      }
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());  // Stop all tracks
+        videoRef.current.srcObject = null;  // Clear the video source
+      }
+      setIsStreaming(false);
+    } catch (error) {
+      console.error("Error stopping the stream: ", error);
     }
   }
 
@@ -66,9 +74,6 @@ function Recording() {
             });
           }
         };
-
-
-        // Start recording with 100ms intervals
         mediaRecorder.start(1000);
       })
       .catch(error => {
@@ -109,33 +114,24 @@ function Recording() {
     <Box sx={{
       display: 'flex',
       flexDirection: 'column',
-      width: '100vw',
-      height: '100vh',
+      height: '100%'
     }}
     >
       <UserHeader />
-      <Box flex={1} display="flex" mt={8}>
-        <Box display="flex" flexDirection="column" gap={2} width={250} borderRight="1px solid #e1e1e1" bgcolor="#fafafa" p={2}>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>League of Legends</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Just Chatting</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>VALORANT</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Silent Hill 2</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Diablo IV</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Genshin Impact</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Apex Legends</Box>
-        </Box>
-        <Box flex={1} padding={2} display="flex" flexWrap="wrap">
+      <Box flex={1} padding={2} display="flex" flexWrap="wrap" mt={8} height="100%">
           <Box flex={1}>
-            <video ref={videoRef} autoPlay playsInline style={{width: '100%'}} />
-            <Box display="flex" gap={1} justifyContent="center" mt={2}>
-              <Button variant="contained" onClick={startStream}>Start Stream</Button>
-              <Button variant="contained" onClick={stopStreaming}>Stop Stream</Button>
-            </Box>
+            <video ref={videoRef} autoPlay playsInline style={{height: '100%'}} />
           </Box>
           <Box sx={{width: 250}} borderLeft="1px solid #e1e1e1">
-            <CommentCard comments={comments} sendMessage={sendMessage} />
+            <Box display="flex" justifyContent="center" mt={2}>
+              {isStreaming ? 
+              <Button variant="contained" onClick={stopStreaming}>Stop Stream</Button>
+              :
+              <Button variant="contained" onClick={startStream}>Start Stream</Button>
+              }
+            </Box>
+            <CommentCard comments={comments} sendMessage={sendMessage} canSendMessage={false}/>
           </Box>
-        </Box>
       </Box>
     </Box>
   )

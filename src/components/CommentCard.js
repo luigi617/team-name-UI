@@ -7,7 +7,7 @@ import SendIcon from '@mui/icons-material/Send';
 import Button from '@mui/material/Button';
 import { useState } from 'react';
 
-export default function CommentCard({ comments, sendMessage }) {
+export default function CommentCard({ comments, sendMessage, canSendMessage=true }) {
   const [message, setMessage] = useState("")
 
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ export default function CommentCard({ comments, sendMessage }) {
           ))
         }
       </Box>
+      {canSendMessage && 
       <Box display="flex" alignItems="center">
         <TextField id="comment" label="Send a message" variant="outlined" size="small" value={message} onChange={e => setMessage(e.target.value)} />
         <Box sx={{bgcolor: '#367fe8', padding: "6px", borderRadius: 1, color: 'white'}} onClick={() => {
@@ -35,6 +36,7 @@ export default function CommentCard({ comments, sendMessage }) {
           <SendIcon />
         </Box>
       </Box>
+      }
     </Box>
   );
 }
