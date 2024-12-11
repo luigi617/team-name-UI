@@ -61,7 +61,7 @@ function UserHeader() {
             textDecoration: 'none',
           }}
         >
-          Live Streaming
+          Team Name
         </Typography>
 
 
