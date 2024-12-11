@@ -10,8 +10,7 @@ const CreateStreaming = () => {
   const [selectedTags, setSelectedTags] = useState([]);
 
   useEffect(() => {
-    
-    fetch(`${process.env.REACT_APP_API_GATEWAY}/game_name_list`)
+    fetch(`${process.env.REACT_APP_COMPOSITION_API}/get_game_name_list`)
       .then(response => response.json())
       .then(data => {
         setGames(data);
@@ -21,7 +20,7 @@ const CreateStreaming = () => {
       });
 
     // Fetch tags from the API
-    fetch(`${process.env.REACT_APP_API_GATEWAY}/game_tag_list`)
+    fetch(`${process.env.REACT_APP_COMPOSITION_API}/get_game_tag_list`)
       .then(response => response.json())
       .then(data => {
         setTags(data);
