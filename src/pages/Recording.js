@@ -2,18 +2,23 @@ import { Box, Button } from '@mui/material';
 import UserHeader from '../components/UserHeader';
 import CommentCard from '../components/CommentCard';
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 
 const socket = io(`${process.env.REACT_APP_STREAMING_SERVICE}/stream`);
-const userId = 1;
-const streamId = 3;
 
 let mediaRecorder;
 
 function Recording() {
   const videoRef = useRef();
   const [isStreaming, setIsStreaming] = useState(false);
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  
+  const userId = queryParams.get('s');
+  const streamId = queryParams.get('v');
 
   const [comments, setComments] = useState([])
 
