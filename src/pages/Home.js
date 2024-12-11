@@ -19,6 +19,7 @@ function Home() {
     `${process.env.REACT_APP_COMPOSITION_API}/get_past_streams` : 
     `${process.env.REACT_APP_COMPOSITION_API}/get_live_streams`;
     url += `?page=${page}`;
+    console.log(url)
     if (game) {
       url += `&game=${encodeURIComponent(game)}`;
     }
