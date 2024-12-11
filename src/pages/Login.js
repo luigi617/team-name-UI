@@ -26,7 +26,7 @@ const LoginPage = () => {
         />
         <button onClick={() => {
           console.log(Cookies.get("user_info"))
-          axios.get("http://18.118.170.174:5001/streams",
+          axios.get("https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/dev/get_live_streams",
             {
               credentials: 'include'
             }
