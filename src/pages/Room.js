@@ -4,6 +4,7 @@ import CommentCard from '../components/CommentCard';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Hls from 'hls.js';
+import { Link } from 'react-router-dom';
 
 
 function Room() {
@@ -17,7 +18,7 @@ function Room() {
   const streamer_id = queryParams.get('s');
   const session_id = queryParams.get('v');
 
-  const show_recommendation = queryParams.get('x');
+  const isPastVideo = queryParams.get('x');
   const [recommendationVideo, setRecommendationVideo] = useState([])
   
   let commentUrl = `${process.env.REACT_APP_COMMENT_SERVICE}/get_comments?streamerId=${streamer_id}&index=-1`;
@@ -27,20 +28,42 @@ function Room() {
     getRecommendation()
   }, [])
 
-  const getRecommendation = () => {
-    if (show_recommendation == 1){
-      
+  const getRecommendation = async () => {
+    
+    if (isPastVideo == 1){
+      try {
+        const response = await fetch(`${process.env.REACT_APP_COMPOSITION_API}/get_user_video_recommendations?user=${'luigi'}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch recommendations');
+        }
+        const data = await response.json();
+        setRecommendationVideo(data.data)
+      } catch (err) {
+        console.error('Error fetching recommendations:', err);
+      }
     }
   }
+
 
   useEffect(() => {
     videoRef.current.type = 'application/x-mpegURL';
     const video = videoRef.current;
     if (streamer_id && session_id && video) {
-      const hls = new Hls();
+      var hls;
+      
+      if (isPastVideo === 1) {
+        hls = new Hls();
+      } else {
+        hls = new Hls({
+          liveSyncDuration: 3, // Aim to be within 3 seconds of the live edge
+          liveMaxLatencyDuration: 6, // Maximum latency of 6 seconds
+          maxBufferLength: 6, // Buffer up to 6 seconds
+          maxMaxBufferLength: 12, // Absolute max buffer length
+        });
+      }
 
       const streamUrl = `${process.env.REACT_APP_STREAMING_SERVICE}/watch/${streamer_id}/${session_id}/stream.m3u8`;
-
+      
       if (Hls.isSupported()) {
         hls.loadSource(streamUrl);
         hls.attachMedia(video);
@@ -49,9 +72,32 @@ function Room() {
             console.error('Error attempting to play:', err);
           });
         });
-        hls.on(Hls.Events.ERROR, (event, data) => {
-          console.error('HLS.js error:', data);
-          setVideoError(true);
+        hls.on(Hls.Events.FRAG_LOADED, () => {
+          // Seek to live edge when a new fragment is loaded
+          const liveSyncPosition = hls.liveSyncPosition;
+          
+          if (isPastVideo == 0 && liveSyncPosition && Math.abs(video.currentTime - liveSyncPosition) > 1) {
+            video.currentTime = liveSyncPosition;
+            console.log(`Seeking to live edge at ${liveSyncPosition} seconds`);
+          }
+        });
+        hls.on(Hls.Events.ERROR, function (event, data) {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.error('Network error encountered, trying to recover...');
+                hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.error('Media error encountered, trying to recover...');
+                hls.recoverMediaError();
+                break;
+              default:
+                setVideoError(true);
+                hls.destroy();
+                break;
+            }
+          }
         });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = streamUrl;
@@ -125,7 +171,11 @@ function Room() {
             muted
             playsInline
             preload="auto"
-            style={{height: '100%'}}
+            style={{
+              height: '100%',
+              width: '100%',
+              maxHeight: "calc(100vh - 100px)"
+            }}
             onError={handleVideoError}
             >
             </video>
@@ -136,7 +186,35 @@ function Room() {
             )}
           </Box>
           <Box sx={{width: 250}} borderLeft="1px solid #e1e1e1">
+            {isPastVideo == 0 ?
             <CommentCard comments={comments} sendMessage={sendMessage} />
+            :
+              recommendationVideo.map((item, index) => (
+                  <Box
+                    key={`past-video-${index}`}
+                    m={2}
+                    sx={{
+                      padding: 3,
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: '#f0f0f0',
+                      },
+                      minWidth: "200px"
+                    }}
+                  >
+                    <Link
+                      to={`/room?s=${item.streamer_id}&v=${item.session_id}&x=1`}
+                      style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}
+                    >
+                      <Typography variant="h6">{item.title}</Typography>
+                      <Typography variant="body1">Game: {item.game}</Typography>
+                      <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
+                    </Link>
+                  </Box>
+                ))
+          }
           </Box>
         </Box>
       </Box>
