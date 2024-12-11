@@ -4,20 +4,19 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 function Home() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  
   const [games, setGames] = useState([]); 
   const [selectedGame, setSelectedGame] = useState(null); 
-  const [liveStreamVideos, setLiveStreamVideos] = useState([]); 
-  const [pastStreamVideos, setPastStreamVideos] = useState([]); 
+  const [liveStreamVideos, setLiveStreamVideos] = useState({}); 
+  const [pastStreamVideos, setPastStreamVideos] = useState({}); 
   const [liveStreamVideosPage, setLiveStreamVideosPage] = useState(1); 
   const [pastStreamVideosPage, setPastStreamVideosPage] = useState(1); 
 
   // Generic fetch function to reduce redundancy
   const fetchVideos = async (type, page = 1, game = null) => {
-    setLoading(true);
-    setError(null);
-    let url = type === 'past' ? process.env.REACT_APP_GET_PAST_STREAM : process.env.REACT_APP_GET_LIVE_STREAM;
+    let url = type === 'past' ?
+    `${process.env.REACT_APP_COMPOSITION_API}/get_past_streams` : 
+    `${process.env.REACT_APP_COMPOSITION_API}/get_live_streams`;
     url += `?page=${page}`;
     if (game) {
       url += `&game=${encodeURIComponent(game)}`;
@@ -30,21 +29,19 @@ function Home() {
       }
       const data = await response.json();
       if (type === 'past') {
-        setPastStreamVideos(data.results || []);
+        setPastStreamVideos(data || []);
       } else {
-        setLiveStreamVideos(data.results || []);
+        setLiveStreamVideos(data || []);
       }
     } catch (err) {
       console.error(`Error fetching ${type} videos:`, err);
-      setError(`Failed to load ${type} videos.`);
     } finally {
-      setLoading(false);
     }
   };
 
   const fetchAvailableGames = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_GET_AVAILABLE_GAME_TAGS}`);
+      const response = await fetch(`${process.env.REACT_APP_COMPOSITION_API}/get_available_games`);
       if (!response.ok) {
         throw new Error('Failed to fetch games');
       }
@@ -52,7 +49,6 @@ function Home() {
       setGames(data["games"] || []);
     } catch (err) {
       console.error('Error fetching games:', err);
-      setError('Failed to load games.');
     }
   };
 
@@ -80,24 +76,7 @@ function Home() {
     window.location.href = '/login';
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <Typography variant="h6">Loading...</Typography>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <Typography variant="h6" color="error">
-          {error}
-        </Typography>
-      </Box>
-    );
-  }
-
+  
   return (
     <Box
       sx={{
@@ -150,13 +129,48 @@ function Home() {
 
         <Box flex={1} padding={2} display="flex" flexDirection="column">
           <Box>
-            <Typography variant="h5" style={{ marginBottom: '1rem' }}>
+            <Box sx={{ marginBottom: '1rem' }} display="flex" justifyContent="space-between">
+            <Typography variant="h5">
               Live Streams
             </Typography>
+            <Box gap={3} display="flex">
+              {liveStreamVideos["previous"] !== null &&
+              <Typography
+                  variant="h6"
+                  onClick={() => { setLiveStreamVideosPage(liveStreamVideosPage-1); }}
+                  sx={{
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    '&:hover': {
+                      color: 'primary.main', // Optional: Change the color on hover
+                    }
+                  }}
+                >
+                  Previous page
+              </Typography>
+              }
+              {liveStreamVideos["next"] !== null &&
+              <Typography
+                  variant="h6"
+                  onClick={() => { setLiveStreamVideosPage(liveStreamVideosPage+1); }}
+                  sx={{
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    '&:hover': {
+                      color: 'primary.main', // Optional: Change the color on hover
+                    }
+                  }}
+                >
+                  Next page
+              </Typography>
+              }
+            </Box>
+          </Box>
+        
 
             <Box display="flex" flexWrap="wrap" gap={3}>
-              {liveStreamVideos.length > 0 ? (
-                liveStreamVideos.map((item, index) => (
+              {liveStreamVideos["results"] ? (
+                liveStreamVideos["results"].map((item, index) => (
                   <Box
                     key={`live-video-${index}`}
                     sx={{
@@ -171,7 +185,7 @@ function Home() {
                     }}
                   >
                     <Link
-                      to={`/room?s=${item.streamer_id}&v=${item.session_id}`}
+                      to={`/room?s=${item.streamer_id}&v=${item.session_id}&x=0`}
                       style={{ textDecoration: 'none', color: 'inherit' }}
                     >
                       <Typography variant="h6">{item.title}</Typography>
@@ -188,13 +202,47 @@ function Home() {
             </Box>
           </Box>
           <Box mt={4}>
-            <Typography variant="h5" style={{ marginBottom: '1rem' }}>
-              Past Streams
+          <Box sx={{ marginBottom: '1rem' }} display="flex" justifyContent="space-between">
+            <Typography variant="h5">
+              Past Videos
             </Typography>
+            <Box gap={3} display="flex">
+            {pastStreamVideos["previous"] !== null &&
+              <Typography
+                  variant="h6"
+                  onClick={() => { setPastStreamVideosPage(pastStreamVideosPage-1); }}
+                  sx={{
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    '&:hover': {
+                      color: 'primary.main', // Optional: Change the color on hover
+                    }
+                  }}
+                >
+                  Previous page
+              </Typography>
+            }
+            {pastStreamVideos["next"] !== null &&
+              <Typography
+                  variant="h6"
+                  onClick={() => { setPastStreamVideosPage(pastStreamVideosPage+1); }}
+                  sx={{
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    '&:hover': {
+                      color: 'primary.main', // Optional: Change the color on hover
+                    }
+                  }}
+                >
+                  Next page
+              </Typography>
+            }
+            </Box>
+          </Box>
 
             <Box display="flex" flexWrap="wrap" gap={3}>
-              {pastStreamVideos.length > 0 ? (
-                pastStreamVideos.map((item, index) => (
+              {pastStreamVideos["results"] ? (
+                pastStreamVideos["results"].map((item, index) => (
                   <Box
                     key={`past-video-${index}`}
                     sx={{
@@ -209,7 +257,7 @@ function Home() {
                     }}
                   >
                     <Link
-                      to={`/room?s=${item.streamer_id}&v=${item.session_id}`}
+                      to={`/room?s=${item.streamer_id}&v=${item.session_id}&x=1`}
                       style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}
                     >
                       <Typography variant="h6">{item.title}</Typography>

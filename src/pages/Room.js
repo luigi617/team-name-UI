@@ -16,12 +16,22 @@ function Room() {
   
   const streamer_id = queryParams.get('s');
   const session_id = queryParams.get('v');
+
+  const show_recommendation = queryParams.get('x');
+  const [recommendationVideo, setRecommendationVideo] = useState([])
   
   let commentUrl = `${process.env.REACT_APP_COMMENT_SERVICE}/get_comments?streamerId=${streamer_id}&index=-1`;
 
   useEffect(() => {
     getMessage()
+    getRecommendation()
   }, [])
+
+  const getRecommendation = () => {
+    if (show_recommendation == 1){
+      
+    }
+  }
 
   useEffect(() => {
     videoRef.current.type = 'application/x-mpegURL';
@@ -44,7 +54,6 @@ function Room() {
           setVideoError(true);
         });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // For Safari and other native HLS support
         video.src = streamUrl;
         video.addEventListener('loadedmetadata', () => {
           video.play().catch((err) => {
@@ -52,13 +61,10 @@ function Room() {
           });
         });
       } else {
-        // Fallback to a non-HLS player or display an error
         console.error('This browser does not support HLS.');
         setVideoError(true);
       }
       
-
-      // Cleanup on unmount
       return () => {
         if (hls) {
           hls.destroy();
