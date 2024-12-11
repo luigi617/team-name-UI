@@ -54,17 +54,10 @@ function Home() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        width: '100vw',
-        height: '100vh',
+        height: '100%',
       }}
     >
       <UserHeader />
-      <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
-        <Typography variant="h4">Available Streams</Typography>
-        <Button variant="contained" color="primary" onClick={handleLoginClick}>
-          Login as Streamer
-        </Button>
-      </Box>
 
       <Box flex={1} padding={2} display="flex" flexDirection="column">
         <Typography variant="h5" style={{ width: '100%', marginTop: '2rem' }}>

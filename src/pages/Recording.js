@@ -6,11 +6,13 @@ import { useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 
-const socket = io(`${process.env.REACT_APP_STREAMING_SERVICE}/stream`);
 
-let mediaRecorder;
+
+
 
 function Recording() {
+  const socket = io(`${process.env.REACT_APP_STREAMING_SERVICE}/stream`);
+  let mediaRecorder;
   const videoRef = useRef();
   const [isStreaming, setIsStreaming] = useState(false);
 
