@@ -35,14 +35,13 @@ function UserHeader() {
   };
 
   const handleCloseUserMenu = (a) => {
-    console.log(a)
     setAnchorElUser(null);
   };
 
   const handleSettingClick = (setting) => {
     handleCloseNavMenu();
     if (setting === 'Start Streaming') {
-      navigate('/recording')
+      navigate('/create-streaming')
     }
   }
 

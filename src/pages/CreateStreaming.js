@@ -1,5 +1,6 @@
 // FILE: src/pages/CreateStreaming.js
 import React, { useState, useEffect } from 'react';
+import '../css/CreateStreamingForm.css';
 
 const CreateStreaming = () => {
   const [title, setTitle] = useState('');
@@ -9,7 +10,7 @@ const CreateStreaming = () => {
   const [selectedTags, setSelectedTags] = useState([]);
 
   useEffect(() => {
-    // Fetch games from the API
+    
     fetch(`${process.env.REACT_APP_API_GATEWAY}/game_name_list`)
       .then(response => response.json())
       .then(data => {
@@ -61,45 +62,68 @@ const CreateStreaming = () => {
   };
 
   return (
-    <div>
-      <h1>Create Streaming</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Title:</label>
+    <div className="form-container">
+      <h1>Create a Streaming Session</h1>
+      <form onSubmit={handleSubmit} className="streaming-form">
+        
+        {/* Title Input */}
+        <div className="form-group">
+          <label htmlFor="title">Title</label>
           <input
+            id="title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
+            placeholder="Enter stream title"
           />
+          {/* Optional: Real-time Validation */}
+          {title.length > 0 && title.length < 5 && (
+            <span className="error">Title must be at least 5 characters long.</span>
+          )}
         </div>
-        <div>
-          <label>Game:</label>
+
+        {/* Game Select */}
+        <div className="form-group">
+          <label htmlFor="game">Game</label>
           <select
+            id="game"
             value={selectedGame}
             onChange={(e) => setSelectedGame(e.target.value)}
             required
           >
-            <option value="">Select a game</option>
-            {games.map(game => (
-              <option key={game} value={game}>{game}</option>
+            <option value="" disabled>Select a game</option>
+            {games.map((game) => (
+              <option key={game} value={game}>
+                {game}
+              </option>
             ))}
           </select>
         </div>
-        <div>
-          <label>Tags:</label>
+
+        {/* Tags Multi-Select */}
+        <div className="form-group">
+          <label htmlFor="tags">Tags</label>
           <select
+            id="tags"
             multiple
             value={selectedTags}
-            onChange={(e) => setSelectedTags([...e.target.selectedOptions].map(option => option.value))}
+            onChange={(e) =>
+              setSelectedTags([...e.target.selectedOptions].map((option) => option.value))
+            }
             required
           >
-            {tags.map(tag => (
-              <option key={tag} value={tag}>{tag}</option>
+            {tags.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
             ))}
           </select>
+          <small>Hold down the Ctrl (Windows) or Command (Mac) button to select multiple options.</small>
         </div>
-        <button type="submit">Proceed</button>
+
+        {/* Submit Button */}
+        <button type="submit" className="submit-button">Proceed</button>
       </form>
     </div>
   );
