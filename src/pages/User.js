@@ -1,22 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import LoginButton from '../components/LoginButton.js'; // Import the LoginButton component
 
 const UserHome = () => {
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false); // State for login popup
   const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch user data from the backend
-    fetch('http://localhost:5001/userHome', {
-      method: 'GET',
-      credentials: 'include', // Include cookies for authentication
-    })
+    fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/user'
+    // fetch('http://localhost:5001/userHome'
+    )
       .then((response) => {
-        if (response.redirected) {
-          // If the backend redirects, navigate to the login page
-          window.location.href = response.url; // Redirect the browser to the login page
+        if (response.status === 401) {
+          // Show login prompt if unauthorized
+          setShowLoginPrompt(true);
+          throw new Error('User not authenticated');
+        } else if (response.redirected) {
+          // Handle redirects
+          window.location.href = response.url;
           throw new Error('Redirecting to login...');
         } else if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -31,6 +36,18 @@ const UserHome = () => {
         }
       });
   }, [navigate]);
+
+  if (showLoginPrompt) {
+    return (
+      <div className="container mt-5 text-center">
+        <div className="alert alert-warning" role="alert">
+          <h4>Not Logged In</h4>
+          <p>You need to log in to access your account.</p>
+          <LoginButton /> {/* Use the LoginButton with default props */}
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
