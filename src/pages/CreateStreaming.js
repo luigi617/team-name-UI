@@ -38,7 +38,7 @@ const CreateStreaming = () => {
       tags: selectedTags,
     };
 
-    fetch(`${process.env.REACT_APP_API_GATEWAY}/start_stream`, {
+    fetch(`${process.env.REACT_APP_COMPOSITION_API}/start_stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
