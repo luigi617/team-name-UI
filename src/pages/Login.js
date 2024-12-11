@@ -1,7 +1,10 @@
 import React from 'react';
 import LoginButton from '../components/LoginButton'; // Import the LoginButton component
+import Cookies from 'js-cookie';
+import axios from 'axios';
 
 const LoginPage = () => {
+  Cookies.set("test", 1324)
   return (
     <div className="container mt-5 text-center">
       <div
@@ -21,6 +24,22 @@ const LoginPage = () => {
           buttonText="Start as Our User"
           className="btn btn-primary"
         />
+        <button onClick={() => {
+          console.log(Cookies.get("user_info"))
+          axios.get("http://18.118.170.174:5001/streams",
+            {
+              credentials: 'include'
+            }
+          ).then((data) => {console.log(123)})
+        }}>nihao2</button>
+        <button onClick={() => {
+          console.log(Cookies.get("user_info"))
+          axios.get("http://18.118.170.174:5001/test",
+            {
+              withCredentials: true
+            }
+          ).then((data) => {console.log(data.data)})
+        }}>nihao1</button>
       </div>
     </div>
   );
