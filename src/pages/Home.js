@@ -1,66 +1,83 @@
 import { Box, Typography, Button } from '@mui/material';
 import UserHeader from '../components/UserHeader';
-// import RoomCard from '../components/RoomCard';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 function Home() {
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [games, setGames] = useState([]); 
   const [selectedGame, setSelectedGame] = useState(null); 
-  const [filteredVideos, setFilteredVideos] = useState([]); 
+  const [liveStreamVideos, setLiveStreamVideos] = useState([]); 
+  const [pastStreamVideos, setPastStreamVideos] = useState([]); 
+  const [liveStreamVideosPage, setLiveStreamVideosPage] = useState(1); 
+  const [pastStreamVideosPage, setPastStreamVideosPage] = useState(1); 
 
-  useEffect(() => {
-    // const url = `${process.env.REACT_APP_GET_PAST_STREAM}/get_past_streams`;
-    // console.log('Fetching data from URL:', url); // Log the URL to the console
-  
-    fetch(`${process.env.REACT_APP_GET_PAST_STREAM}/get_past_streams`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch videos');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setVideos(data.results || []); 
-        setFilteredVideos(data.results || []); 
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching videos:', err);
-        setError('Failed to load videos.');
-        setLoading(false);
-    });
+  // Generic fetch function to reduce redundancy
+  const fetchVideos = async (type, page = 1, game = null) => {
+    setLoading(true);
+    setError(null);
+    let url = type === 'past' ? process.env.REACT_APP_GET_PAST_STREAM : process.env.REACT_APP_GET_LIVE_STREAM;
+    url += `?page=${page}`;
+    if (game) {
+      url += `&game=${encodeURIComponent(game)}`;
+    }
 
-    fetch(`${process.env.REACT_APP_GET_AVAILABLE_GAME_TAGS}/get_available_games`)
-    .then((response) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch videos');
+      }
+      const data = await response.json();
+      if (type === 'past') {
+        setPastStreamVideos(data.results || []);
+      } else {
+        setLiveStreamVideos(data.results || []);
+      }
+    } catch (err) {
+      console.error(`Error fetching ${type} videos:`, err);
+      setError(`Failed to load ${type} videos.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAvailableGames = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_GET_AVAILABLE_GAME_TAGS}`);
       if (!response.ok) {
         throw new Error('Failed to fetch games');
       }
-      return response.json();
-    })
-    .then((data) => {
-      setGames(data || []);
-    })
-    .catch((err) => {
+      const data = await response.json();
+      setGames(data["games"] || []);
+    } catch (err) {
       console.error('Error fetching games:', err);
-    });
+      setError('Failed to load games.');
+    }
+  };
+
+  useEffect(() => {
+    fetchAvailableGames();
   }, []);
+
+  // Fetch live videos when page or selectedGame changes
+  useEffect(() => {
+    fetchVideos('live', liveStreamVideosPage, selectedGame);
+  }, [liveStreamVideosPage, selectedGame]);
+
+  // Fetch past videos when page or selectedGame changes
+  useEffect(() => {
+    fetchVideos('past', pastStreamVideosPage, selectedGame);
+  }, [pastStreamVideosPage, selectedGame]);
+
+  const changeSelectedGame = (game) => {
+    setSelectedGame(game);
+    setLiveStreamVideosPage(1);
+    setPastStreamVideosPage(1);
+  };
 
   const handleLoginClick = () => {
     window.location.href = '/login';
-  };
-
-  const handleGameClick = (game) => {
-    setSelectedGame(selectedGame === game ? null : game);
-    if (game) {
-      const filtered = videos.filter((video) => video.game === game.game);
-      setFilteredVideos(filtered);
-    } else {
-      setFilteredVideos(videos); 
-    }
   };
 
   if (loading) {
@@ -91,7 +108,7 @@ function Home() {
     >
       <UserHeader />
 
-      <Box flex={1} display="flex" mt={2}>
+      <Box flex={1} display="flex" mt={8}>
         <Box
           display="flex"
           flexDirection="column"
@@ -113,9 +130,9 @@ function Home() {
                     backgroundColor: selectedGame !== game ? '#d3d3d3' : '#a2c2e0', 
                   },
                 }}
-                onClick={() => handleGameClick(game)} 
+                onClick={() => changeSelectedGame(game)} 
               >
-                {game.game}
+                {game}
               </Box>
             ))
           ) : (
@@ -125,46 +142,85 @@ function Home() {
           )}
         </Box>
 
-  
         <Box flex={1} padding={2} display="flex" flexDirection="column">
-          <Typography variant="h5" style={{ marginBottom: '1rem' }}>
-            Ongoing Streams
-          </Typography>
+          <Box>
+            <Typography variant="h5" style={{ marginBottom: '1rem' }}>
+              Live Streams
+            </Typography>
 
-          <Box display="flex" flexWrap="wrap" gap={3}>
-            {filteredVideos.length > 0 ? (
-              filteredVideos.map((item, index) => (
-                <Box
-                  key={`video-${index}`}
-                  sx={{
-                    padding: 2,
-                    border: '1px solid #ccc',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: '#f0f0f0',
-                    },
-                  }}
-                >
-                  <Link
-                    to={`/room?s=${item.streamer_id}&v=${item.session_id}`}
-                    style={{ textDecoration: 'none', color: 'inherit' }}
+            <Box display="flex" flexWrap="wrap" gap={3}>
+              {liveStreamVideos.length > 0 ? (
+                liveStreamVideos.map((item, index) => (
+                  <Box
+                    key={`live-video-${index}`}
+                    sx={{
+                      padding: 2,
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: '#f0f0f0',
+                      },
+                    }}
                   >
-                    <Typography variant="h6">{item.title}</Typography>
-                    <Typography variant="body1">Game: {item.game}</Typography>
-                    <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
-                    <Typography variant="body2">Start Time: {item.start_time}</Typography>
-                    <Typography variant="body2">End Time: {item.end_time}</Typography>
-                  </Link>
-                </Box>
-              ))
-            ) : (
-              <Typography variant="body2" color="textSecondary">
-                No videos available for this game
-              </Typography>
-            )}
+                    <Link
+                      to={`/room?s=${item.streamer_id}&v=${item.session_id}`}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                      <Typography variant="h6">{item.title}</Typography>
+                      <Typography variant="body1">Game: {item.game}</Typography>
+                      <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
+                      <Typography variant="body2">Start Time: {new Date(item.start_time).toLocaleString()}</Typography>
+                      <Typography variant="body2">End Time: {new Date(item.end_time).toLocaleString()}</Typography>
+                    </Link>
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body2" color="textSecondary">
+                  No live videos available for this game
+                </Typography>
+              )}
+            </Box>
           </Box>
+          <Box mt={4}>
+            <Typography variant="h5" style={{ marginBottom: '1rem' }}>
+              Past Streams
+            </Typography>
 
+            <Box display="flex" flexWrap="wrap" gap={3}>
+              {pastStreamVideos.length > 0 ? (
+                pastStreamVideos.map((item, index) => (
+                  <Box
+                    key={`past-video-${index}`}
+                    sx={{
+                      padding: 2,
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: '#f0f0f0',
+                      },
+                    }}
+                  >
+                    <Link
+                      to={`/room?s=${item.streamer_id}&v=${item.session_id}`}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                      <Typography variant="h6">{item.title}</Typography>
+                      <Typography variant="body1">Game: {item.game}</Typography>
+                      <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
+                      <Typography variant="body2">Start Time: {new Date(item.start_time).toLocaleString()}</Typography>
+                      <Typography variant="body2">End Time: {new Date(item.end_time).toLocaleString()}</Typography>
+                    </Link>
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body2" color="textSecondary">
+                  No past videos available for this game
+                </Typography>
+              )}
+            </Box>
+          </Box>
         </Box>
       </Box>
     </Box>
