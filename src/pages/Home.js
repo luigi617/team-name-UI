@@ -23,6 +23,7 @@ function Home() {
     if (game) {
       url += `&game=${encodeURIComponent(game)}`;
     }
+    
 
     try {
       const response = await axios.get(url);
