@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import LoginButton from '../components/LoginButton.js'; // Import the LoginButton component
 
-const UserHome = () => {
+const User = () => {
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false); // State for login popup
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,8 +14,8 @@ const UserHome = () => {
     )
       .then((response) => {
         if (response.status === 401) {
-          // Show login prompt if unauthorized
-          setShowLoginPrompt(true);
+          // Redirect to the login page if unauthorized
+          navigate('/login');
           throw new Error('User not authenticated');
         } else if (response.redirected) {
           // Handle redirects
@@ -36,18 +34,6 @@ const UserHome = () => {
         }
       });
   }, [navigate]);
-
-  if (showLoginPrompt) {
-    return (
-      <div className="container mt-5 text-center">
-        <div className="alert alert-warning" role="alert">
-          <h4>Not Logged In</h4>
-          <p>You need to log in to access your account.</p>
-          <LoginButton /> {/* Use the LoginButton with default props */}
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -114,4 +100,4 @@ const UserHome = () => {
   );
 };
 
-export default UserHome;
+export default User;

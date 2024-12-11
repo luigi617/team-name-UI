@@ -1,76 +1,29 @@
-import { Box, Button, Card, TextField } from '@mui/material';
-import bgImage from '../assets/images/bg.jpg';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React from 'react';
+import LoginButton from '../components/LoginButton'; // Import the LoginButton component
 
-function Login() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-
-  const navigate = useNavigate();
-
-  const login = () => {
-    navigate('/')
-    fetch(`${process.env.REACT_APP_AUTHENTICATION_SERVICE}/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        identifier: email,
-        password
-      })
-    }).then(res => res.json())
-      .then(res => {
-        if (res.status === 'error') {
-          toast.error(res.message)
-        } else {
-          toast.success("Login successful!");
-          localStorage.setItem("token", res.token)
-          navigate('/home')
-        }
-      })
-  }
-
+const LoginPage = () => {
   return (
-    <Box
-      sx={{
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundImage: `url(${bgImage})`,
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-        backgroundSize: 'cover'
-      }}
-    >
-      <Card sx={{ width: 350, display: 'flex', flexDirection: 'column', padding: 2, gap: 2 }}>
-        <h1>Login</h1>
-        <TextField
-          id="email"
-          label="Email"
-          variant="outlined"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
+    <div className="container mt-5 text-center">
+      <div
+        style={{
+          backgroundColor: '#FFF7D6',
+          padding: '2rem',
+          borderRadius: '8px',
+          textAlign: 'center',
+          maxWidth: '400px',
+          margin: '50px auto',
+        }}
+      >
+        <h2 style={{ color: '#6D4C41' }}>Not Logged In</h2>
+        <p style={{ color: '#6D4C41' }}>You need to log in to access your account.</p>
+        <LoginButton
+          loginUrl="https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/auth/login" // Replace with your backend login URL
+          buttonText="Start as Our User"
+          className="btn btn-primary"
         />
-        <TextField
-          id="password"
-          type="password"
-          label="password"
-          variant="outlined"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
-        <Button variant="contained" disableElevation onClick={login}>
-          Login
-        </Button>
-        <Box textAlign="left" sx={{mb: 1}}>Don't have an account?<Link to='/sign-up'>Sign up</Link></Box>
-      </Card>
-    </Box>
-  )
-}
+      </div>
+    </div>
+  );
+};
 
-export default Login
+export default LoginPage;
