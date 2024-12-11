@@ -2,7 +2,7 @@ import { Box, Typography, Button } from '@mui/material';
 import UserHeader from '../components/UserHeader';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-
+import VideoCard from '../components/VideoCard'
 function Home() {
   
   const [games, setGames] = useState([]); 
@@ -170,28 +170,15 @@ function Home() {
             <Box display="flex" flexWrap="wrap" gap={3}>
               {liveStreamVideos["results"] ? (
                 liveStreamVideos["results"].map((item, index) => (
-                  <Box
-                    key={`live-video-${index}`}
-                    sx={{
-                      padding: 3,
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: '#f0f0f0',
-                      },
-                      minWidth: "200px"
-                    }}
-                  >
-                    <Link
-                      to={`/room?s=${item.streamer_id}&v=${item.session_id}&x=0`}
-                      style={{ textDecoration: 'none', color: 'inherit' }}
-                    >
-                      <Typography variant="h6">{item.title}</Typography>
-                      <Typography variant="body1">Game: {item.game}</Typography>
-                      <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
-                    </Link>
-                  </Box>
+                  <VideoCard
+                  index={index}
+                  title={item.title}
+                  game={item.game}
+                  streamer_id={item.streamer_id}
+                  session_id={item.session_id}
+                  isPastVideo={0}
+                  ></VideoCard>
+                  
                 ))
               ) : (
                 <Typography variant="body2" color="textSecondary">
@@ -242,28 +229,14 @@ function Home() {
             <Box display="flex" flexWrap="wrap" gap={3}>
               {pastStreamVideos["results"] ? (
                 pastStreamVideos["results"].map((item, index) => (
-                  <Box
-                    key={`past-video-${index}`}
-                    sx={{
-                      padding: 3,
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: '#f0f0f0',
-                      },
-                      minWidth: "200px"
-                    }}
-                  >
-                    <Link
-                      to={`/room?s=${item.streamer_id}&v=${item.session_id}&x=1`}
-                      style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}
-                    >
-                      <Typography variant="h6">{item.title}</Typography>
-                      <Typography variant="body1">Game: {item.game}</Typography>
-                      <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
-                    </Link>
-                  </Box>
+                  <VideoCard
+                  index={index}
+                  title={item.title}
+                  game={item.game}
+                  streamer_id={item.streamer_id}
+                  session_id={item.session_id}
+                  isPastVideo={1}
+                  ></VideoCard>
                 ))
               ) : (
                 <Typography variant="body2" color="textSecondary">

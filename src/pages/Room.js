@@ -4,7 +4,7 @@ import CommentCard from '../components/CommentCard';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Hls from 'hls.js';
-import { Link } from 'react-router-dom';
+import VideoCard from '../components/VideoCard';
 
 
 function Room() {
@@ -190,29 +190,16 @@ function Room() {
             <CommentCard comments={comments} sendMessage={sendMessage} />
             :
               recommendationVideo.map((item, index) => (
-                  <Box
-                    key={`past-video-${index}`}
-                    m={2}
-                    sx={{
-                      padding: 3,
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: '#f0f0f0',
-                      },
-                      minWidth: "200px"
-                    }}
-                  >
-                    <Link
-                      to={`/room?s=${item.streamer_id}&v=${item.session_id}&x=1`}
-                      style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}
-                    >
-                      <Typography variant="h6">{item.title}</Typography>
-                      <Typography variant="body1">Game: {item.game}</Typography>
-                      <Typography variant="body2">Streamer: {item.streamer_id}</Typography>
-                    </Link>
-                  </Box>
+                <Box m={2}>
+                <VideoCard
+                index={index}
+                title={item.title}
+                game={item.game}
+                streamer_id={item.streamer_id}
+                session_id={item.session_id}
+                isPastVideo={1}
+                ></VideoCard>
+                </Box>
                 ))
           }
           </Box>
