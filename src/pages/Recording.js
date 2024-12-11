@@ -6,12 +6,23 @@ import { useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 
+function getAccessToken() {
+  return localStorage.getItem('access_token');
+}
 
+function getRefreshToken() {
+  return localStorage.getItem('refresh_token');
+}
 
 
 
 function Recording() {
-  const socket = io(`${process.env.REACT_APP_STREAMING_SERVICE}/stream`);
+  const socket = io(`${process.env.REACT_APP_STREAMING_SERVICE}/stream`, {
+    query: {
+        access_token: getAccessToken(),
+        refresh_token: getRefreshToken(),
+    },
+  });
   let mediaRecorder;
   const videoRef = useRef();
 
