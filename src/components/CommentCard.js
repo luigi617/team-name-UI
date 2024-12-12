@@ -29,6 +29,7 @@ export default function CommentCard({ comments, sendMessage, canSendMessage=true
         <TextField id="comment" label="Send a message" variant="outlined" size="small" value={message} onChange={e => setMessage(e.target.value)} />
         <Box sx={{bgcolor: '#367fe8', padding: "6px", borderRadius: 1, color: 'white'}} onClick={() => {
           if (message) {
+            console.log("Deteceted message in console sendding it", message)
             sendMessage(message)
             setMessage('')
           }

@@ -9,7 +9,7 @@ import VideoCard from '../components/VideoCard';
 
 function Room() {
   const videoRef = useRef();
-  const [comments, setComments] = useState([])
+  const [comments, setComments] = useState([]);
   const [videoError, setVideoError] = useState(false);
   
   const location = useLocation();
@@ -17,11 +17,14 @@ function Room() {
   
   const streamer_id = queryParams.get('s');
   const session_id = queryParams.get('v');
+  
 
   const isPastVideo = queryParams.get('x');
+  // const sendMessageUrl = 'http://18.219.53.163:5000/post_comment'
+  const sendMessageUrl = `${process.env.REACT_APP_COMPOSITION_API}/post_comment`; // Replace with your actual endpoint URL
   const [recommendationVideo, setRecommendationVideo] = useState([])
-  
-  let commentUrl = `${process.env.REACT_APP_COMMENT_SERVICE}/get_comments?streamerId=${streamer_id}&index=-1`;
+  const [comemntUrl, setCommentUrl] = useState(`${process.env.REACT_APP_COMPOSITION_API_MAJOR}/get_comments?streamerId=${session_id}&index=0&limit=3`);
+  // let commentUrl = `${process.env.REACT_APP_COMMENT_SERVICE}/get_comments?streamerId=${streamer_id}&index=-1`;
 
   useEffect(() => {
     getMessage()
@@ -44,6 +47,27 @@ function Room() {
     }
   }
 
+  const getMessage = async () => {
+
+    console.log("Here is the url", comemntUrl)
+    const intervalId = setInterval(() => {
+      fetch(comemntUrl)
+        .then(res => res.json())
+        .then(res => {
+          const newUrl = res.links.next;
+          console.log("URL COMparison here",newUrl, comemntUrl)
+          if (comemntUrl !== newUrl) { 
+            console.log("Updating")
+            setComments((comments) => [...comments, res.comments]);
+            setCommentUrl(newUrl);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }, 10000);
+    return () => clearInterval(intervalId);
+  };
 
   useEffect(() => {
     videoRef.current.type = 'application/x-mpegURL';
@@ -61,6 +85,7 @@ function Room() {
           maxMaxBufferLength: 12, // Absolute max buffer length
         });
       }
+      
 
       const streamUrl = `${process.env.REACT_APP_STREAMING_SERVICE}/watch/${streamer_id}/${session_id}/stream.m3u8`;
       
@@ -119,33 +144,25 @@ function Room() {
     }
   }, [streamer_id, session_id]);
 
-  const getMessage = () => {
-    fetch(commentUrl)
-      .then(res => res.json())
-      .then(res => {
-        setComments(res)
-        commentUrl = res["links"]["next"]
-      }).catch((err) => {
-      console.log(err)
-    })
-  }
-
-  const sendMessage = (message) => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/post_comment`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        comment: message,
-        streamerId: streamer_id,
-      },
-      body: JSON.stringify({})
-    })
-      .then(res => res.json())
-      .then(res => {
-        getMessage()
-      }).catch((err) => {
-      console.log(err)
-    })
+  async function sendMessage(comment) {
+    console.log("Message sending now, with url",sendMessageUrl, session_id, comment)
+    const data = { session_id: session_id, comment: comment };
+  
+    try {
+      const response = await fetch(sendMessageUrl, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const result = await response.json();
+      console.log(result); // Handle the response as needed
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   }
 
   const handleVideoError = () => {

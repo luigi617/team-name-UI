@@ -33,9 +33,10 @@ function Recording() {
   const streamId = queryParams.get('v');
 
   const [comments, setComments] = useState([])
-
+  
   useEffect(() => {
-    getMessage()
+    console.log("This is recording page actually");
+    // getMessage()
     startStream()
   }, [])
 
@@ -47,6 +48,12 @@ function Recording() {
     Stream()
   }
 
+
+  const addComment = (newComment) => {
+    setComments((comments) => [...comments, newComment]);
+  };
+
+  
   const stopStreaming = () => {
     try {
 
@@ -97,34 +104,47 @@ function Recording() {
       });
   }
 
-  const getMessage = () => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/request/1`)
-      .then(res => res.json())
-      .then(res => {
-        setComments(res)
-      }).catch((err) => {
-        console.log(err)
-    })
-  }
+  // const getMessage = () => {
+  //   const [comemntUrl, setCommentUrl] = useState(`${process.env.REACT_APP_COMMENT_SERVICE}:5000/get_comments?streamerId=${streamId}&index=0&limit=3`);
+  //   console.log("Here is the url", url)
+  //   useEffect(() => {
+  //     const intervalId = setInterval(() => {
+  //       fetch(comemntUrl)
+  //         .then(res => res.json())
+  //         .then(res => {
+  //           const newUrl = res.links.next;
+  //           if (comemntUrl !== newUrl) { 
+  //             addComment(res.comments);
+  //             setCommentUrl(newUrl);
+  //           }
+  //         })
+  //         .catch((err) => {
+  //           console.log(err);
+  //         });
+  //     }, 1000);
+  
+  //     return () => clearInterval(intervalId);
+  //   }, []);
+  // };
 
-  const sendMessage = (message) => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/upload`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        comment: message,
-        userId: 1,
-        targetId: 2,
-      },
-      body: JSON.stringify({})
-    })
-      .then(res => res.json())
-      .then(res => {
-        getMessage()
-      }).catch((err) => {
-      console.log(err)
-    })
-  }
+  // const sendMessage = (message) => {
+  //   fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/upload`, {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       comment: message,
+  //       userId: 1,
+  //       targetId: 2,
+  //     },
+  //     body: JSON.stringify({})
+  //   })
+  //     .then(res => res.json())
+  //     .then(res => {
+  //       getMessage()
+  //     }).catch((err) => {
+  //     console.log(err)
+  //   })
+  // }
 
   return (
     <Box sx={{
@@ -142,7 +162,7 @@ function Recording() {
             <Box display="flex" justifyContent="center" mt={2}>
               <Button variant="contained" onClick={stopStreaming}>Stop Stream</Button>
             </Box>
-            <CommentCard comments={comments} sendMessage={sendMessage} canSendMessage={false}/>
+            {/* <CommentCard comments={comments} sendMessage={sendMessage} canSendMessage={false}/> */}
           </Box>
       </Box>
     </Box>
