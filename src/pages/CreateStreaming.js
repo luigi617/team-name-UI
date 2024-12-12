@@ -68,9 +68,9 @@ const CreateStreaming = () => {
       
       const session_id = data_json["data"]["session_id"]
       navigate(`/recording?s=${streamer_id}&v=${session_id}`)
-  } catch (err) {
-    console.error('Error:', err);
-  }
+    } catch (err) {
+      console.error('Error:', err);
+    }
   };
 
   return (

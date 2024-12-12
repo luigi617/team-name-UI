@@ -47,9 +47,8 @@ function Recording() {
     Stream()
   }
 
-  const stopStreaming = () => {
+  const stopStreaming = async () => {
     try {
-
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
         socket.emit('stop_stream');
@@ -62,6 +61,28 @@ function Recording() {
       }
     } catch (error) {
       console.error("Error stopping the stream: ", error);
+    }
+
+
+    const data = {
+      streamer_id: userId,
+      session_id: streamId,
+    }
+    try {
+      const res = await fetch(`${process.env.REACT_APP_COMPOSITION_API}/end_stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', // specify the content type
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Something went wrong!');
+      }
+      const result = await res.json();
+    } catch (err) {
+      console.error('Error:', err);
     }
   }
 
@@ -155,3 +176,5 @@ function Recording() {
 }
 
 export default Recording
+
+
