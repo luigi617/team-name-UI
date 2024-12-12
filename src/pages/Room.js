@@ -62,7 +62,7 @@ function Room() {
         });
       }
 
-      const streamUrl = `${process.env.REACT_APP_STREAMING_SERVICE}/watch/${streamer_id}/${session_id}/stream.m3u8`;
+      const streamUrl = `${process.env.REACT_APP_COMPOSITION_API}/watch?streamer_id=${streamer_id}&session_id=${session_id}`;
       console.log(streamUrl);
       
       if (Hls.isSupported()) {
