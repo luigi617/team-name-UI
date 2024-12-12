@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const User = () => {
   const [userData, setUserData] = useState(null);
@@ -9,16 +8,12 @@ const User = () => {
 
   useEffect(() => {
     // Fetch user data from the backend
-    fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/user'
-    // fetch('http://localhost:5001/userHome'
-    )
+    fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/userHome')
       .then((response) => {
         if (response.status === 401) {
-          // Redirect to the login page if unauthorized
           navigate('/login');
           throw new Error('User not authenticated');
         } else if (response.redirected) {
-          // Handle redirects
           window.location.href = response.url;
           throw new Error('Redirecting to login...');
         } else if (!response.ok) {
@@ -37,65 +32,70 @@ const User = () => {
 
   if (error) {
     return (
-      <div className="container mt-5">
-        <div className="alert alert-danger" role="alert">
-          <strong>Error:</strong> {error}
-        </div>
+      <div style={{ margin: '20px', textAlign: 'center', color: 'red' }}>
+        <strong>Error:</strong> {error}
       </div>
     );
   }
 
   if (!userData) {
     return (
-      <div className="container mt-5 text-center">
-        <div className="spinner-border" role="status">
-          <span className="sr-only">Loading...</span>
-        </div>
+      <div style={{ margin: '20px', textAlign: 'center' }}>
+        <div style={{ width: '40px', height: '40px', margin: '0 auto', border: '4px solid #ddd', borderTop: '4px solid #4caf50', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
         <p>Loading user data...</p>
       </div>
     );
   }
 
   return (
-    <div className="container mt-5">
-      <div className="card">
-        <div className="card-header bg-primary text-white">
-          <h3>Welcome, {userData.preferred_name || 'User'}!</h3>
-        </div>
-        <div className="card-body">
-          <div className="row mb-3">
-            <div className="col-md-4">
-              {userData.photo_url ? (
-                <img
-                  src={userData.photo_url}
-                  alt="User Profile"
-                  className="img-fluid rounded-circle"
-                />
-              ) : (
-                <div
-                  className="bg-secondary text-white text-center rounded-circle d-flex align-items-center justify-content-center"
-                  style={{ width: '100px', height: '100px' }}
-                >
-                  <span style={{ fontSize: '2rem' }}>
-                    {userData.preferred_name
-                      ? userData.preferred_name.charAt(0).toUpperCase()
-                      : 'U'}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="col-md-8">
-              <h5>Email:</h5>
-              <p>{userData.email}</p>
-              <h5>User ID:</h5>
-              <p>{userData.user_id}</p>
-            </div>
+    <div style={{ maxWidth: '600px', margin: '20px auto', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', textAlign: 'center' }}>
+      <h3 style={{ color: '#4caf50' }}>Welcome, {userData.preferred_name || 'User'}!</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px 0' }}>
+        {userData.photo_url ? (
+          <img
+            src={userData.photo_url}
+            alt="User Profile"
+            style={{ width: '100px', height: '100px', borderRadius: '50%' }}
+          />
+        ) : (
+          <div
+            style={{
+              width: '100px',
+              height: '100px',
+              backgroundColor: '#ccc',
+              color: '#fff',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '2rem',
+            }}
+          >
+            {userData.preferred_name
+              ? userData.preferred_name.charAt(0).toUpperCase()
+              : 'U'}
           </div>
-          <a href="http://localhost:5001/logout" className="btn btn-danger">
-            Logout
-          </a>
-        </div>
+        )}
       </div>
+      <div style={{ textAlign: 'left', marginBottom: '20px' }}>
+        <h5>Email:</h5>
+        <p>{userData.email}</p>
+        <h5>User ID:</h5>
+        <p>{userData.user_id}</p>
+      </div>
+      <a
+        href="https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/logout"
+        style={{
+          display: 'inline-block',
+          padding: '10px 20px',
+          backgroundColor: '#d9534f',
+          color: '#fff',
+          borderRadius: '4px',
+          textDecoration: 'none',
+        }}
+      >
+        Logout
+      </a>
     </div>
   );
 };
