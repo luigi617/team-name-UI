@@ -198,6 +198,7 @@ function Room() {
                 streamer_id={item.streamer_id}
                 session_id={item.session_id}
                 isPastVideo={1}
+                width='100%'
                 ></VideoCard>
                 </Box>
                 ))
