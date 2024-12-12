@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import '../css/CreateStreamingForm.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const CreateStreaming = () => {
   const [title, setTitle] = useState('');
@@ -9,6 +10,8 @@ const CreateStreaming = () => {
   const [selectedGame, setSelectedGame] = useState('');
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
+
+  const navigate = useNavigate();
 
   const get_game_name_list = async () => {
     try {
@@ -41,33 +44,33 @@ const CreateStreaming = () => {
     get_game_tag_list()
   }, []);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    const streamer_id = 1
     const data = {
-      title,
+      streamer_id: streamer_id,
+      title: title,
       game: selectedGame,
       tags: selectedTags,
-    };
-
-    axios.post(`${process.env.REACT_APP_COMPOSITION_API}/start_stream`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Stream created successfully:', data);
-        const token = data.token;
-        if (token) {
-          window.location.href = `/streaming?token=${token}`;
-        } else {
-          console.error('Token not found in response');
-        }
-      })
-      .catch(error => {
-        console.error('Error creating stream:', error);
+    }
+    try {
+      const res = await fetch(`${process.env.REACT_APP_COMPOSITION_API}/start_stream`, {
+        method: 'POST',
+        body: JSON.stringify(data),
       });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Something went wrong!');
+      }
+
+      const result = await res.json();
+      const data_json = JSON.parse(result)
+      
+      const session_id = data_json["data"]["session_id"]
+      navigate(`/recording?s=${streamer_id}&v=${session_id}`)
+  } catch (err) {
+    console.error('Error:', err);
+  }
   };
 
   return (
@@ -139,3 +142,4 @@ const CreateStreaming = () => {
 };
 
 export default CreateStreaming;
+
