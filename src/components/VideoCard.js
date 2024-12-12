@@ -10,8 +10,8 @@ import { Box, Typography } from '@mui/material';
 import placeholderImage from '../assets/images/placeholder.jpg'
 
 export default function VideoCard({ index, title, game, streamer_id, session_id, isPastVideo }) {
-    const coverUrl = `${process.env.REACT_APP_COMPOSITION_API}/get_video_cover?streamer_id=${streamer_id}&session_id=${session_id}`;
-    console.log(coverUrl)
+    // const coverUrl = `${process.env.REACT_APP_COMPOSITION_API}/get_video_cover?streamer_id=${streamer_id}&session_id=${session_id}`;
+    const coverUrl = `${process.env.REACT_APP_STREAMING_SERVICE}/cover/${streamer_id}/${session_id}/x`;
   return (
     <Box
         key={`${streamer_id}-${session_id}-${index}`}
