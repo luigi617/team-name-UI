@@ -2,46 +2,112 @@ import { Box, Button } from '@mui/material';
 import UserHeader from '../components/UserHeader';
 import CommentCard from '../components/CommentCard';
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import axios from 'axios';
 
+function getAccessToken() {
+  return localStorage.getItem('access_token');
+}
 
-const socket = io(`${process.env.REACT_APP_STREAMING_SERVICE}/stream`);
-// Define the user ID (you can retrieve this from a login system)
-const userId = 1;  // Replace with dynamic user ID
-
-// Generate a unique stream ID
-const streamId = parseInt(Date.now());
-
-let mediaRecorder;
+function getRefreshToken() {
+  return localStorage.getItem('refresh_token');
+}
 
 function Recording() {
+  const socketRef = useRef(null);
+  let mediaRecorder;
   const videoRef = useRef();
 
-  const [comments, setComments] = useState([])
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+
+  const userId = queryParams.get('s');
+  const streamId = queryParams.get('v');
+
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
-    getMessage()
-  }, [])
-
-  const startStream = () => {
-    socket.emit('start_stream', {
-      user_id: userId,
-      stream_id: streamId
+    // Initialize socket connection
+    const socket = io(`${process.env.REACT_APP_STREAMING_SERVICE}/stream`, {
+      query: {
+        access_token: getAccessToken(),
+        refresh_token: getRefreshToken(),
+      },
     });
-    Stream()
-  }
 
-  const stopStreaming = () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
-      socket.emit('stop_stream', {
-        user_id: userId,
-        stream_id: streamId
-      });
+    socketRef.current = socket;
+
+    // Fetch initial comments
+    getMessage();
+
+    // Automatically start the stream
+    startStream(socket);
+
+    // Cleanup on unmount
+    return () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        socket.emit('stop_stream');
+      }
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+        videoRef.current.srcObject = null;
+      }
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  const startStream = (socket) => {
+    Stream(socket);
+  };
+
+  const stopStreaming = async () => {
+    try {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        socketRef.current.emit('stop_stream');
+      }
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());  // Stop all tracks
+        videoRef.current.srcObject = null;  // Clear the video source
+      }
+      if (socketRef.current.connected) {
+        socketRef.current.disconnect();
+      }
+    } catch (error) {
+      console.error("Error stopping the stream: ", error);
     }
-  }
 
-  const Stream = () => {
+    const data = {
+      streamer_id: userId,
+      session_id: streamId,
+    };
+    try {
+      const res = await fetch(`${process.env.REACT_APP_COMPOSITION_API}/end_stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', // specify the content type
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Something went wrong!');
+      }
+      const result = await res.json();
+    } catch (err) {
+      console.error('Error:', err);
+    }
+  };
+
+  const Stream = (socket) => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then(stream => {
         // Display the live preview
@@ -59,86 +125,77 @@ function Recording() {
             event.data.arrayBuffer().then(buffer => {
               // Send the data along with the user ID and stream ID
               socket.emit('video_data', {
-                user_id: userId,
-                stream_id: streamId,
                 data: buffer
               });
             });
           }
         };
-
-
-        // Start recording with 100ms intervals
         mediaRecorder.start(1000);
+        socket.emit('start_stream', {
+          user_id: userId,
+          stream_id: streamId
+        });
       })
       .catch(error => {
         console.error('Error accessing media devices.', error);
       });
-  }
+  };
 
-  const getMessage = () => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/request/1`)
-      .then(res => res.json())
-      .then(res => {
-        setComments(res)
-      }).catch((err) => {
-        console.log(err)
-    })
-  }
+  const getMessage = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/request/1`);
 
-  const sendMessage = (message) => {
-    fetch(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/upload`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        comment: message,
-        userId: 1,
-        targetId: 2,
-      },
-      body: JSON.stringify({})
-    })
-      .then(res => res.json())
-      .then(res => {
-        getMessage()
-      }).catch((err) => {
-      console.log(err)
-    })
-  }
+      // Check for a successful response
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch comments');
+      }
+
+      const data = response.data;  // Axios already parses the response to JSON
+
+      setComments(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const sendMessage = async (message) => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/upload`, { message });
+
+      // Check for a successful response
+      if (response.status !== 200) {
+        throw new Error('Failed to upload comment');
+      }
+
+      const data = response.data;  // Axios already parses the response to JSON
+
+      getMessage();
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <Box sx={{
       display: 'flex',
       flexDirection: 'column',
-      width: '100vw',
-      height: '100vh',
-    }}
-    >
+      height: '100%'
+    }}>
       <UserHeader />
-      <Box flex={1} display="flex" mt={8}>
-        <Box display="flex" flexDirection="column" gap={2} width={250} borderRight="1px solid #e1e1e1" bgcolor="#fafafa" p={2}>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>League of Legends</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Just Chatting</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>VALORANT</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Silent Hill 2</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Diablo IV</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Genshin Impact</Box>
-          <Box sx={{bgcolor: '#cccccc'}} p={1}>Apex Legends</Box>
+      <Box flex={1} padding={2} display="flex" flexWrap="wrap" mt={8} height="100%">
+        <Box flex={1}>
+          <video ref={videoRef} autoPlay playsInline style={{ height: '100%' }} />
         </Box>
-        <Box flex={1} padding={2} display="flex" flexWrap="wrap">
-          <Box flex={1}>
-            <video ref={videoRef} autoPlay playsInline style={{width: '100%'}} />
-            <Box display="flex" gap={1} justifyContent="center" mt={2}>
-              <Button variant="contained" onClick={startStream}>Start Stream</Button>
-              <Button variant="contained" onClick={stopStreaming}>Stop Stream</Button>
-            </Box>
+        <Box sx={{ width: 250 }} borderLeft="1px solid #e1e1e1">
+          <Box display="flex" justifyContent="center" mt={2}>
+            <Button variant="contained" onClick={() => startStream(socketRef.current)}>Start Stream</Button>
+            <Button variant="contained" onClick={stopStreaming}>Stop Stream</Button>
           </Box>
-          <Box sx={{width: 250}} borderLeft="1px solid #e1e1e1">
-            <CommentCard comments={comments} sendMessage={sendMessage} />
-          </Box>
+          <CommentCard comments={comments} sendMessage={sendMessage} canSendMessage={false} />
         </Box>
       </Box>
     </Box>
-  )
+  );
 }
 
-export default Recording
+export default Recording;

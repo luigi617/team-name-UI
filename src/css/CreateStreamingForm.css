@@ -1,0 +1,105 @@
+/* Container Styling */
+.form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  /* Heading */
+  .form-container h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.8em;
+    color: #333333;
+  }
+  
+  /* Form Styling */
+  .streaming-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* Form Group */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Labels */
+  .form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555555;
+  }
+  
+  /* Input Fields */
+  .form-group input[type="text"],
+  .form-group select {
+    padding: 10px 12px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 1em;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  /* Input Focus States */
+  .form-group input[type="text"]:focus,
+  .form-group select:focus {
+    border-color: #007BFF;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+  }
+  
+  /* Multi-Select Specific Styling */
+  .form-group select[multiple] {
+    height: 120px;
+  }
+  
+  /* Helper Text */
+  .form-group small {
+    margin-top: 5px;
+    color: #888888;
+    font-size: 0.9em;
+  }
+  
+  /* Error Message */
+  .error {
+    margin-top: 5px;
+    color: #D8000C;
+    font-size: 0.9em;
+  }
+  
+  /* Submit Button */
+  .submit-button {
+    padding: 12px;
+    background-color: #007BFF;
+    color: #ffffff;
+    font-size: 1em;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  /* Submit Button Hover Effect */
+  .submit-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 600px) {
+    .form-container {
+      padding: 20px;
+      margin: 20px;
+    }
+  
+    .form-container h1 {
+      font-size: 1.5em;
+    }
+  }
+  
