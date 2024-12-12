@@ -46,7 +46,7 @@ const CreateStreaming = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const streamer_id = 1
+    const streamer_id = "luigi"
     const data = {
       streamer_id: streamer_id,
       title: title,
