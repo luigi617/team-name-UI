@@ -19,7 +19,6 @@ function Home() {
     `${process.env.REACT_APP_COMPOSITION_API}/get_past_streams` : 
     `${process.env.REACT_APP_COMPOSITION_API}/get_live_streams`;
     url += `?page=${page}`;
-    console.log(url)
     if (game) {
       url += `&game=${encodeURIComponent(game)}`;
     }
@@ -58,6 +57,7 @@ function Home() {
 
   useEffect(() => {
     fetchAvailableGames();
+    
   }, []);
 
   // Fetch live videos when page or selectedGame changes
@@ -173,7 +173,7 @@ function Home() {
         
 
             <Box display="flex" flexWrap="wrap" gap={3}>
-              {liveStreamVideos["results"] ? (
+              {liveStreamVideos["results"] != undefined && liveStreamVideos["results"].length > 0 ? (
                 liveStreamVideos["results"].map((item, index) => (
                   <VideoCard
                   index={index}
@@ -232,7 +232,7 @@ function Home() {
           </Box>
 
             <Box display="flex" flexWrap="wrap" gap={3}>
-              {pastStreamVideos["results"] ? (
+              {pastStreamVideos["results"] && pastStreamVideos["results"].length > 0 ? (
                 pastStreamVideos["results"].map((item, index) => (
                   <VideoCard
                   index={index}
