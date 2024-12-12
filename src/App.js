@@ -9,6 +9,7 @@ import Room from './pages/Room';
 import Recording from './pages/Recording';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import User from './pages/User';
 import SignUp from './pages/SignUp';
 import CreateStreaming from "./pages/CreateStreaming";
 
@@ -18,8 +19,8 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
-    path: "/sign-up",
-    element: <SignUp />,
+    path: "/user",
+    element: <User />,
   },
   {
     path: "/",
