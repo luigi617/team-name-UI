@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import '../css/CreateStreamingForm.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 const CreateStreaming = () => {
   const [title, setTitle] = useState('');
@@ -12,6 +13,7 @@ const CreateStreaming = () => {
   const [selectedTags, setSelectedTags] = useState([]);
 
   const navigate = useNavigate();
+  const userId = Cookies.get('user_id') || 1;
 
   const get_game_name_list = async () => {
     try {
@@ -46,9 +48,8 @@ const CreateStreaming = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const streamer_id = "luigi"
     const data = {
-      streamer_id: streamer_id,
+      streamer_id: userId,
       title: title,
       game: selectedGame,
       tags: selectedTags,
@@ -67,7 +68,7 @@ const CreateStreaming = () => {
       const data_json = JSON.parse(result)
       
       const session_id = data_json["data"]["session_id"]
-      navigate(`/recording?s=${streamer_id}&v=${session_id}`)
+      navigate(`/recording?s=${userId}&v=${session_id}`)
     } catch (err) {
       console.error('Error:', err);
     }
