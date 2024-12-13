@@ -31,6 +31,7 @@ function Room() {
     getRecommendation()
   }, [])
 
+
   const getRecommendation = async () => {
     
     if (isPastVideo == 1){
