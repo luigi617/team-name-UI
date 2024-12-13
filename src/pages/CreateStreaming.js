@@ -58,6 +58,7 @@ const CreateStreaming = () => {
       const res = await fetch(`${process.env.REACT_APP_COMPOSITION_API}/start_stream`, {
         method: 'POST',
         body: JSON.stringify(data),
+        credentials: 'include',
       });
       if (!res.ok) {
         const errorData = await res.json();
