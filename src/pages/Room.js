@@ -14,19 +14,29 @@ function Room() {
   
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  
+  const user_id = "current tmp user id"
   const streamer_id = queryParams.get('s');
   const session_id = queryParams.get('v');
 
   const isPastVideo = queryParams.get('x');
   const [recommendationVideo, setRecommendationVideo] = useState([])
   
-  let commentUrl = `${process.env.REACT_APP_COMMENT_SERVICE}/get_comments?streamerId=${streamer_id}&index=-1`;
-
+  // let commentUrl = `${process.env.REACT_APP_COMMENT_SERVICE}/get_comments?streamerId=${streamer_id}&index=-1`;
+  // const sendMessageUrl = 'http://18.219.53.163:5000/post_comment'
+  const sendMessageUrl = `${process.env.REACT_APP_COMPOSITION_API}/post_comment`; // Replace with your actual endpoint URL
+  
+  const [comemntUrl, setCommentUrl] = useState(`${process.env.REACT_APP_COMPOSITION_API_MAJOR}/get_comments?streamerId=${session_id}&index=0&limit=3`);
+  const commentRef = useRef([]);
+  const commentUrlRef = useRef(comemntUrl);
+  useEffect(() => {
+    console.log("Actual URL replacement got called for rerender");
+    commentUrlRef.current = comemntUrl;
+    setComments((comments) => [...comments, ...commentRef.current]);
+  },[comemntUrl]);
   useEffect(() => {
     getMessage()
     getRecommendation()
-  }, [])
+  }, []);
 
   const getRecommendation = async () => {
     
@@ -43,6 +53,55 @@ function Room() {
       }
     }
   }
+
+  function replaceUrl(url) {
+    // Parsing the original URL
+    const parsedUrl = new URL(url);
+
+    // Setting the new hostname, protocol, and removing the port
+    parsedUrl.protocol = 'https';
+    parsedUrl.hostname = 'ck9gfyuz0d.execute-api.us-east-2.amazonaws.com';
+    parsedUrl.port = ''; // Removing the port
+
+    // Adjusting the index query parameter
+    const index = parsedUrl.searchParams.get('index');
+    if (index === '1') {
+        parsedUrl.searchParams.set('index', '0');
+    }
+
+    // Returning the modified URL as a string
+    return parsedUrl.toString();
+}
+
+  const getMessage = async () => {
+
+    console.log("Here is the url", comemntUrl)
+    const intervalId = setInterval(() => {
+      fetch(commentUrlRef.current)
+        .then(res => res.json())
+        .then(res => {
+          console.log("Before replace url", res.links.next)
+          const newUrl = replaceUrl(res.links.next);
+          console.log(newUrl,"New Url Here");
+          console.log("New Url",newUrl);
+          console.log("commentUrlRef.current",commentUrlRef.current);
+          console.log("comemntUrl", comemntUrl);
+          console.log("comments",comments);
+          if (commentUrlRef.current !== newUrl && commentUrlRef.current === comemntUrl) { 
+            console.log("Updating, with comments", res.comments);
+            // setCommentUrl(newUrl);
+            setCommentUrl(newUrl);
+            commentRef.current = res.comments;
+            console.log("Break point 1", commentUrlRef.current);
+            // setComments((comments) => [...comments, res.comments]);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }, 10000);
+    return () => clearInterval(intervalId);
+  };
 
 
   useEffect(() => {
@@ -120,32 +179,53 @@ function Room() {
     }
   }, [streamer_id, session_id]);
 
-  const getMessage = () => {
-    axios.get(commentUrl)
-      .then(res => res.json())
-      .then(res => {
-        setComments(res)
-        commentUrl = res["links"]["next"]
-      }).catch((err) => {
-      console.log(err)
-    })
-  }
+  // const getMessage = () => {
+  //   axios.get(commentUrl)
+  //     .then(res => res.json())
+  //     .then(res => {
+  //       setComments(res)
+  //       commentUrl = res["links"]["next"]
+  //     }).catch((err) => {
+  //     console.log(err)
+  //   })
+  // }
 
-  const sendMessage = (message) => {
-    axios.post(`${process.env.REACT_APP_COMMENT_SERVICE}/post_comment`, {
-      headers: {
-        'Content-Type': 'application/json',
-        comment: message,
-        streamerId: streamer_id,
-      },
-      body: JSON.stringify({})
-    })
-      .then(res => res.json())
-      .then(res => {
-        getMessage()
-      }).catch((err) => {
-      console.log(err)
-    })
+  // const sendMessage = (message) => {
+  //   axios.post(`${process.env.REACT_APP_COMMENT_SERVICE}/post_comment`, {
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       comment: message,
+  //       streamerId: streamer_id,
+  //     },
+  //     body: JSON.stringify({})
+  //   })
+  //     .then(res => res.json())
+  //     .then(res => {
+  //       getMessage()
+  //     }).catch((err) => {
+  //     console.log(err)
+  //   })
+  // }
+
+  async function sendMessage(comment) {
+    console.log("Message sending now, with url",sendMessageUrl, session_id, comment)
+    const data = { session_id: session_id, comment: comment, user_id: user_id};
+  
+    try {
+      const response = await fetch(sendMessageUrl, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      
+      const result = await response.json();
+      console.log(result); // Handle the response as needed
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   }
 
   const handleVideoError = () => {

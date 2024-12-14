@@ -17,9 +17,9 @@ export default function CommentCard({ comments, sendMessage, canSendMessage=true
       <Box display="flex" flexDirection="column" gap={1}>
         {
           comments.map(comment => (
-            <Box key={comment.id} textAlign="left">
-              <span style={{fontWeight: 'bold'}}>User {comment.userId}</span>
-              <span style={{fontSize: 14}}>:  {comment.Comment}</span>
+            <Box textAlign="left">
+              <span style={{fontWeight: 'bold'}}>User {comment.user_id}</span>
+              <span style={{fontSize: 14}}>:  {comment.comment}</span>
             </Box>
           ))
         }
