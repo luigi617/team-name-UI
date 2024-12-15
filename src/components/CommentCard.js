@@ -16,10 +16,10 @@ export default function CommentCard({ comments, sendMessage, canSendMessage=true
     <Box height="100%" display="flex" flexDirection="column" justifyContent="space-between" padding={2} boxSizing="border-box">
       <Box display="flex" flexDirection="column" gap={1}>
         {
-          comments.map(comment => (
-            <Box key={comment.id} textAlign="left">
-              <span style={{fontWeight: 'bold'}}>User {comment.userId}</span>
-              <span style={{fontSize: 14}}>:  {comment.Comment}</span>
+          comments.map((comment, index) => (
+            <Box key={index} textAlign="left">  {/* Key using index */}
+              <span style={{fontWeight: 'bold'}}>User {comment.user_id}</span>
+              <span style={{fontSize: 14}}>:  {comment.comment}</span>
             </Box>
           ))
         }

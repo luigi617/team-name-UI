@@ -40,7 +40,7 @@ function Recording() {
     socketRef.current = socket;
 
     // Fetch initial comments
-    getMessage();
+    // getMessage();
 
     // Automatically start the stream
     startStream(socket);
@@ -62,6 +62,37 @@ function Recording() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const commentSocket = io(`${process.env.REACT_APP_COMMENT_SERVICE}`, { transports: ['websocket'] });
+    commentSocket.on('connect', () => {
+        console.log('Connected to server');
+        // Register the streamer, adjust the streamer_id as necessary
+        commentSocket.emit('register_streamer', { streamer_id: streamId });
+    });
+
+    commentSocket.on('new_comment', (data) => {
+        console.log('Received new comment:', data);
+        // Update the comments state to render this comment
+        setComments(comments => [...comments, data]);
+    });
+
+    commentSocket.on('disconnect', () => {
+        console.log('Disconnected from server');
+    });
+
+    commentSocket.on('registration', (data) => {
+        console.log('Registration Status:', data.status);
+    });
+
+    return () => {
+      commentSocket.off('connect');
+      commentSocket.off('new_comment');
+      commentSocket.off('disconnect');
+      commentSocket.off('registration');
+      commentSocket.close();
+    };
+}, []);
 
   const startStream = (socket) => {
     Stream(socket);
@@ -142,22 +173,22 @@ function Recording() {
       });
   };
 
-  const getMessage = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/request/1`);
+  // const getMessage = async () => {
+  //   try {
+  //     const response = await axios.get(`${process.env.REACT_APP_COMMENT_SERVICE}/comments/request/1`);
 
-      // Check for a successful response
-      if (response.status !== 200) {
-        throw new Error('Failed to fetch comments');
-      }
+  //     // Check for a successful response
+  //     if (response.status !== 200) {
+  //       throw new Error('Failed to fetch comments');
+  //     }
 
-      const data = response.data;  // Axios already parses the response to JSON
+  //     const data = response.data;  // Axios already parses the response to JSON
 
-      setComments(data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  //     setComments(data);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
 
   const sendMessage = async (message) => {
     try {
@@ -170,7 +201,7 @@ function Recording() {
 
       const data = response.data;  // Axios already parses the response to JSON
 
-      getMessage();
+      // getMessage();
     } catch (err) {
       console.log(err);
     }
