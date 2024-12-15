@@ -51,10 +51,10 @@ const CreateStreaming = () => {
     event.preventDefault();
 
     if (!userId || !email) {
-      alert('You are not logged in. Please log in to start a stream.');
+      console.error('User ID or email not found');
       return;
     }
-
+    
     const data = {
       streamer_id: userId,
       streamer_email: email,
