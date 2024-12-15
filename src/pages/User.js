@@ -7,8 +7,12 @@ const User = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("Cookies available in the browser:", document.cookie);
     // Fetch user data from the backend
-    fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/userHome')
+    fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/userHome', {
+      method: 'GET',
+      credentials: 'include',
+    })
       .then((response) => {
         if (response.status === 401) {
           navigate('/login');
