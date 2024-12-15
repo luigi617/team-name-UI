@@ -25,17 +25,60 @@ function Room() {
   // const sendMessageUrl = 'http://18.219.53.163:5000/post_comment'
   const sendMessageUrl = `${process.env.REACT_APP_COMPOSITION_API}/post_comment`; // Replace with your actual endpoint URL
   
-  const [comemntUrl, setCommentUrl] = useState(`${process.env.REACT_APP_COMPOSITION_API_MAJOR}/get_comments?streamerId=${session_id}&index=0&limit=3`);
+  // const [comemntUrl, setCommentUrl] = useState(`${process.env.REACT_APP_COMPOSITION_API_MAJOR}/get_comments?streamerId=${session_id}&index=0&limit=3`);
   const commentRef = useRef([]);
-  const commentUrlRef = useRef(comemntUrl);
+  const [commentIndex, setCommentIndex] = useState(0);
+  const commentIndexRef = useRef(commentIndex)
+  const commentUrlRef = useRef(`${process.env.REACT_APP_COMPOSITION_API_MAJOR}/get_comments?streamerId=${session_id}&index=0&limit=3`);
+  function replaceUrl(url) {
+    // Parsing the original URL
+    const parsedUrl = new URL(url);
+
+    // Setting the new hostname, protocol, and removing the port
+    parsedUrl.protocol = 'https';
+    parsedUrl.hostname = 'ck9gfyuz0d.execute-api.us-east-2.amazonaws.com';
+    parsedUrl.port = ''; // Removing the port
+
+    // Adjusting the index query parameter
+    const index = parsedUrl.searchParams.get('index');
+    if (index === '1') {
+        parsedUrl.searchParams.set('index', '0');
+    }
+
+    // Returning the modified URL as a string
+    return parsedUrl.toString();
+  }
+  function extractParamsFromUrl(url) {
+    const parsedUrl = new URL(url);
+    const params = new URLSearchParams(parsedUrl.search);
+    
+  
+    const index = params.get('index');
+    return index;
+  }
+  function createCommentsUrl(streamerId, index, limit) {
+    const baseUrl = "https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/get_comments";
+    const params = new URLSearchParams({
+        streamerId,
+        index,
+        limit
+    }).toString();
+    
+    return `${baseUrl}?${params}`;
+}
+
   useEffect(() => {
-    console.log("Actual URL replacement got called for rerender");
-    commentUrlRef.current = comemntUrl;
+    // console.log("Actual URL replacement got called for rerender, commentUrl", commentIndex);
+    // console.log("Actual URL replacement got called for rerender, commentUrlRef", commentIndexRef.current);
+    commentIndexRef.current = commentIndex;
+    commentUrlRef.current = createCommentsUrl(session_id, commentIndex, 3);
     setComments((comments) => [...comments, ...commentRef.current]);
-  },[comemntUrl]);
+    // console.log("After setting, comment URL value:", commentIndex);
+    // console.log("After setting the value, commentUrlRef value:", commentIndexRef.current)
+  },[commentIndex]);
   useEffect(() => {
-    getMessage()
-    getRecommendation()
+    getMessage();
+    getRecommendation();
   }, []);
 
   const getRecommendation = async () => {
@@ -54,56 +97,39 @@ function Room() {
     }
   }
 
-  function replaceUrl(url) {
-    // Parsing the original URL
-    const parsedUrl = new URL(url);
-
-    // Setting the new hostname, protocol, and removing the port
-    parsedUrl.protocol = 'https';
-    parsedUrl.hostname = 'ck9gfyuz0d.execute-api.us-east-2.amazonaws.com';
-    parsedUrl.port = ''; // Removing the port
-
-    // Adjusting the index query parameter
-    const index = parsedUrl.searchParams.get('index');
-    if (index === '1') {
-        parsedUrl.searchParams.set('index', '0');
-    }
-
-    // Returning the modified URL as a string
-    return parsedUrl.toString();
-}
 
   const getMessage = async () => {
-
-    console.log("Here is the url", comemntUrl)
     const intervalId = setInterval(() => {
       fetch(commentUrlRef.current)
         .then(res => res.json())
         .then(res => {
-          console.log("Before replace url", res.links.next)
+          // console.log("Before replace url", res.links.next);
           const newUrl = replaceUrl(res.links.next);
-          console.log(newUrl,"New Url Here");
-          console.log("New Url",newUrl);
-          console.log("commentUrlRef.current",commentUrlRef.current);
-          console.log("comemntUrl", comemntUrl);
-          console.log("comments",comments);
-          if (commentUrlRef.current !== newUrl && commentUrlRef.current === comemntUrl) { 
-            console.log("Updating, with comments", res.comments);
-            // setCommentUrl(newUrl);
-            setCommentUrl(newUrl);
+          // console.log("New Url",newUrl);
+          // console.log("commentUrlRef.current",commentUrlRef.current);
+          // console.log("comemntUrl", comemntUrl);
+          // console.log("comments",comments);
+          // console.log("commentIndexRef",commentIndexRef.current);
+          // console.log("commentIndex",commentIndex);
+          const newIndex = parseInt(extractParamsFromUrl(newUrl), 10);
+          // console.log("newIndex",newIndex);
+          if (newIndex > commentIndexRef.current) { 
+            // console.log("Index Updating", newIndex);
+            setCommentIndex(newIndex);
             commentRef.current = res.comments;
-            console.log("Break point 1", commentUrlRef.current);
-            // setComments((comments) => [...comments, res.comments]);
+            // console.log("Break point 1", commentUrlRef.current);
+            // console.log("Break point 1", comemntUrl);
           }
         })
         .catch((err) => {
           console.log(err);
         });
-    }, 10000);
+    }, 3000);
     return () => clearInterval(intervalId);
   };
 
 
+  
   useEffect(() => {
     videoRef.current.type = 'application/x-mpegURL';
     const video = videoRef.current;
@@ -122,7 +148,7 @@ function Room() {
       }
 
       const streamUrl = `${process.env.REACT_APP_STREAMING_SERVICE}/watch/${streamer_id}/${session_id}/stream.m3u8`;
-      console.log(streamUrl);
+      // console.log(streamUrl);
       
       if (Hls.isSupported()) {
         hls.loadSource(streamUrl);
