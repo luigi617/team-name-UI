@@ -13,7 +13,8 @@ const CreateStreaming = () => {
   const [selectedTags, setSelectedTags] = useState([]);
 
   const navigate = useNavigate();
-  const userId = Cookies.get('user_id') || 1;
+  const userId = Cookies.get('user_id');
+  const email = Cookies.get('email');
 
   const get_game_name_list = async () => {
     try {
@@ -48,8 +49,15 @@ const CreateStreaming = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!userId || !email) {
+      alert('You are not logged in. Please log in to start a stream.');
+      return;
+    }
+
     const data = {
       streamer_id: userId,
+      streamer_email: email,
       title: title,
       game: selectedGame,
       tags: selectedTags,
