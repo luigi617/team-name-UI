@@ -10,6 +10,7 @@ const User = () => {
     console.log("Cookies available in the browser:", document.cookie);
     // Fetch user data from the backend
     fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/userHome', {
+    // fetch('http://localhost:5001/userHome', {
       method: 'GET',
       credentials: 'include',
     })
@@ -88,7 +89,21 @@ const User = () => {
         <p>{userData.user_id}</p>
       </div>
       <a
+        href="/"
+        style={{
+          display: 'inline-block',
+          padding: '10px 20px',
+          backgroundColor: '#5bc0de', // Blue color for the new button
+          color: '#fff',
+          borderRadius: '4px',
+          textDecoration: 'none',
+        }}
+      >
+        Enter Streaming App ~
+      </a>
+      <a
         href="https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/logout"
+        // href="http://localhost:5001/logout"
         style={{
           display: 'inline-block',
           padding: '10px 20px',

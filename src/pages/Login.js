@@ -14,11 +14,13 @@ const LoginPage = () => {
 
         if (data.access_token && data.id_token && data.user_info) {
           // Store tokens and user info in cookies
-          Cookies.set('access_token', data.access_token);
-          Cookies.set('refresh_token', data.refresh_token);
-          Cookies.set('id_token', data.id_token);
-          Cookies.set('user_info', JSON.stringify(data.user_info));
-
+          Cookies.set('access_token', data.access_token, { sameSite: 'None', secure: true });
+          Cookies.set('refresh_token', data.refresh_token, { sameSite: 'None', secure: true });
+          Cookies.set('id_token', data.id_token, { sameSite: 'None', secure: true });
+          Cookies.set('user_id', JSON.stringify(data.user_info.user_id), { sameSite: 'None', secure: true });
+          Cookies.set('email', JSON.stringify(data.user_info.email), { sameSite: 'None', secure: true });  
+          
+          Cookies.set('user_info', JSON.stringify(data.user_info), { sameSite: 'None', secure: true });
           // Update message
           setMessage('You are logged in!');
         } else {
@@ -39,6 +41,7 @@ const LoginPage = () => {
   const refreshCredential = async () => {
     try {
       const response = await fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/auth/getcredential', {
+      // const response = await fetch('http://localhost:5001/auth/getcredential', {
         method: 'GET',
         credentials: 'include', // Include cookies in the request
       });
@@ -56,11 +59,12 @@ const LoginPage = () => {
       const data = await response.json();
 
       // Set credentials in cookies
-      Cookies.set('access_token', data.access_token);
-      Cookies.set('id_token', data.id_token);
-      Cookies.set('refresh_token', data.refresh_token);
-      Cookies.set('user_info', JSON.stringify(data.user_info));
-
+      Cookies.set('access_token', data.access_token, { sameSite: 'None', secure: true });
+      Cookies.set('id_token', data.id_token, { sameSite: 'None', secure: true });
+      Cookies.set('refresh_token', data.refresh_token, { sameSite: 'None', secure: true });
+      Cookies.set('user_info', JSON.stringify(data.user_info), { sameSite: 'None', secure: true });
+      Cookies.set('user_id', JSON.stringify(data.user_info.user_id), { sameSite: 'None', secure: true });
+      Cookies.set('email', JSON.stringify(data.user_info.email), { sameSite: 'None', secure: true });  
       // Update message
       setMessage('Credentials refreshed. You are logged in!');
     } catch (error) {
@@ -70,7 +74,7 @@ const LoginPage = () => {
   };
 
   const navigateToUserHome = () => {
-    window.location.href = '/'; 
+    window.location.href = '/user'; 
   };
 
   return (

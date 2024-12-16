@@ -14,7 +14,7 @@ import Logo from '../assets/images/logo.jpg';
 import { useNavigate } from 'react-router-dom';
 import placeholder from '../assets/images/2.jpg'
 
-const settings = ['Start Streaming', 'Logout'];
+const settings = ['Start Streaming', 'User Home', 'Logout'];
 
 function UserHeader() {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -36,6 +36,9 @@ function UserHeader() {
     handleCloseUserMenu();
     if (setting === 'Start Streaming') {
       navigate('/create-streaming')
+    }
+    if (setting === 'User Home') {
+      navigate('/user')
     }
   }
 
