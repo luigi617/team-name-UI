@@ -1,7 +1,7 @@
 import React from 'react';
 
 const LoginButton = ({
-  loginUrl = 'https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/auth/login',
+  loginUrl = `${process.env.REACT_APP_AUTH_API}/auth/login`,
   buttonText = 'Log In',
   className = 'btn btn-primary',
 }) => {

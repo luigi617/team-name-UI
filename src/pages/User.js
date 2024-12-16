@@ -9,7 +9,7 @@ const User = () => {
   useEffect(() => {
     console.log("Cookies available in the browser:", document.cookie);
     // Fetch user data from the backend
-    fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/userHome', {
+    fetch(`${process.env.REACT_APP_AUTH_API}/userHome`, {
       method: 'GET',
       credentials: 'include',
     })
@@ -92,7 +92,7 @@ const User = () => {
         style={{
           display: 'inline-block',
           padding: '10px 20px',
-          backgroundColor: '#5bc0de', // Blue color for the new button
+          backgroundColor: '#5bc0de', 
           color: '#fff',
           borderRadius: '4px',
           textDecoration: 'none',
@@ -101,8 +101,7 @@ const User = () => {
         Enter Streaming App ~
       </a>
       <a
-        // href="https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/logout"
-        href="http://localhost:5001/logout"
+        href={`${process.env.REACT_APP_AUTH_API}/logout`}
         style={{
           display: 'inline-block',
           padding: '10px 20px',
