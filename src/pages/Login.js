@@ -41,7 +41,6 @@ const LoginPage = () => {
   const refreshCredential = async () => {
     try {
       const response = await fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/auth/getcredential', {
-      // const response = await fetch('http://localhost:5001/auth/getcredential', {
         method: 'GET',
         credentials: 'include', // Include cookies in the request
       });

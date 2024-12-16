@@ -10,7 +10,6 @@ const User = () => {
     console.log("Cookies available in the browser:", document.cookie);
     // Fetch user data from the backend
     fetch('https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/userHome', {
-    // fetch('http://localhost:5001/userHome', {
       method: 'GET',
       credentials: 'include',
     })
@@ -102,8 +101,8 @@ const User = () => {
         Enter Streaming App ~
       </a>
       <a
-        href="https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/logout"
-        // href="http://localhost:5001/logout"
+        // href="https://ck9gfyuz0d.execute-api.us-east-2.amazonaws.com/logout"
+        href="http://localhost:5001/logout"
         style={{
           display: 'inline-block',
           padding: '10px 20px',
